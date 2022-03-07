@@ -58,7 +58,7 @@ cols = st.columns(3)
 # Natrural Gas Import
 cols[0].markdown("### Natural gas")
 # cols[0].markdown("[10$^3$ TWh/a]")
-colors = [get_color(x, default_col="black2") for x in ng_share.index]
+colors = [get_color(x, default_col="blue4") for x in ng_share.index]
 fig = go.Figure()
 fig.add_trace(go.Pie(labels=ng_share.index, values = ng_share.value, hole=.3, marker=dict(colors=colors)))
 cols[0].plotly_chart(fig, use_container_width=True)
@@ -66,7 +66,7 @@ cols[0].caption("Source: Eurostat, 2020")
 
 # Solid Fuels
 cols[1].markdown("### Solid fuels")
-colors = [get_color(x, default_col="black4") for x in solid_fuel_share.index]
+colors = [get_color(x, default_col="black") for x in solid_fuel_share.index]
 fig = go.Figure()
 fig.add_trace(go.Pie(labels=solid_fuel_share.index, values = solid_fuel_share.value, hole=.3, marker=dict(colors=colors)))
 
