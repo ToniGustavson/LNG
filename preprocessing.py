@@ -34,16 +34,7 @@ def get_ng_storage():
     return gng_df
 
 
-def get_OPAL():
-    df = pd.read_excel("Input/Pipeline_OPAL.xlsx")
-    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
-    return df
 
-
-def get_NEL():
-    df = pd.read_excel("Input/Pipeline_NEL.xlsx")
-    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
-    return df
 
 def get_ng_share():
     # Natura Gas Import, Source: Eurostat (2020),  Unit: 10**3 TWh
@@ -72,3 +63,97 @@ def get_crude_oil_share():
     df = pd.DataFrame.from_dict(data, orient='index')
     df.rename(columns={0:"value"}, inplace=True)
     return df
+
+
+# Pipeline Data
+
+def get_OPAL():
+    df = pd.read_excel("Input/Pipeline_Transportation/Greifswald_OPAL.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_NEL():
+    df = pd.read_excel("Input/Pipeline_Transportation/Greifswald_NEL.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Wysokoje():
+    df = pd.read_excel("Input/Pipeline_Transportation/Wysokoje.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Drozdovichi():
+    df = pd.read_excel("Input/Pipeline_Transportation/Drozdovichi_GCP_GAZ_SYSTEM.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Imatra():
+    df = pd.read_excel("Input/Pipeline_Transportation/Imatra(Finland).xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Isaccea1():
+    df = pd.read_excel("Input/Pipeline_Transportation/Isaccea - Orlovka I.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Isaccea2():
+    df = pd.read_excel("Input/Pipeline_Transportation/Isaccea - Orlovka II.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Isaccea3():
+    df = pd.read_excel("Input/Pipeline_Transportation/Isaccea - Orlovka III.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Isaccea0():
+    df = pd.read_excel("Input/Pipeline_Transportation/Isaccea - Orlovka.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Kipoi():
+    df = pd.read_excel("Input/Pipeline_Transportation/Kipoi.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Kondratki():
+    df = pd.read_excel("Input/Pipeline_Transportation/Kondratki.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Kotlovka():
+    df = pd.read_excel("Input/Pipeline_Transportation/Kotlovka.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Mediesu_Aurit():
+    df = pd.read_excel("Input/Pipeline_Transportation/Mediesu Aurit - Tekovo.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Narva():
+    df = pd.read_excel("Input/Pipeline_Transportation/Narva.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Strandzha():
+    df = pd.read_excel("Input/Pipeline_Transportation/Strandzha 2.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Värska():
+    df = pd.read_excel("Input/Pipeline_Transportation/Värska.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_Velke_Kapusany():
+    df = pd.read_excel("Input/Pipeline_Transportation/Velke Kapusany (Eustream).xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
+def get_VIP_Bereg():
+    df = pd.read_excel("Input/Pipeline_Transportation/VIP Bereg.xlsx")
+    df.loc[:, "value"] = df.loc[:, "value"]/10**6 # kWh/d -> GWh/d
+    return df
+
