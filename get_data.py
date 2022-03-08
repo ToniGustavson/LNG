@@ -33,52 +33,69 @@ eu27 = [
 ]
 
 
-def get_eurostat_data(commodity, nlargest):
-    table_dict = {
-        "ng": "nrg_ti_gas",
-        "lng": "nrg_ti_gas",
-        "oil": "nrg_ti_oil",
-        "sff": "nrg_ti_sff",
-    }
-    table_name = table_dict.get(commodity)
-
-    df_raw = eurostat.get_data_df(table_name)
-    df_raw.rename({"geo\\time": "geo"}, inplace=True, axis=1)
-
-    if commodity == "ng":
-        df = df_raw[
-            df_raw.siec.isin(["G3000"]) & df_raw.unit.isin(["TJ_GCV"])
-        ]  # gas_df.geo.isin(eu27)
-    elif commodity == "lng":
-        df = df_raw[
-            df_raw.siec.isin(["G3200"]) & df_raw.unit.isin(["TJ_GCV"])
-        ]  # df_raw.geo.isin(eu27)
+def get_eurostat_data(commodity, mode, nlargest, year=2020, local=True):
+    fileDir_all = f"Input/Eurostat/{commodity}_{mode}.xlsx"
+    fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{year}.xlsx"
+    if local:
+        df_nlargest = pd.read_excel(fileDir_all, index_col=0)
+        df_single_year = pd.read_excel(fileDir_single, index_col=0).squeeze()
     else:
-        # df = df_raw[
-        #     df_raw.geo.isin(eu27)
-        # ]
-        df = df_raw.copy()
+        mode_dict = {"import": "ti", "export": "te", "production": "cb"}
+        mode_table = mode_dict.get(mode)
+        table_dict = {
+            "ng": f"nrg_{mode_table}_gas",
+            "lng": f"nrg_{mode_table}_gas",
+            "oil": f"nrg_{mode_table}_oil",
+            "sff": f"nrg_{mode_table}_sff",
+        }
+        table_name = table_dict.get(commodity)
 
-    df_nlargest = (
-        df.groupby("partner")
-        .sum()
-        .sort_values(by=2020, ascending=False)
-        .nlargest(nlargest, 2020)
-    )
-    df_nlargest = df_nlargest / 3600  # TJ -> TWh
+        df = eurostat.get_data_df(table_name)
+        df.rename({"geo\\time": "geo"}, inplace=True, axis=1)
 
-    total_ds = df_nlargest.loc["TOTAL", :]
+        df = df[df.geo.isin(eu27)]
 
-    if "NSP" in df_nlargest.index:
-        df_nlargest.drop(["NSP"], axis=0, inplace=True)
-    if "TOTAL" in df_nlargest.index:
-        df_nlargest.drop(["TOTAL"], axis=0, inplace=True)
+        if commodity == "ng":
+            df = df[df.siec.isin(["G3000"]) & df.unit.isin(["TJ_GCV"])]
+        elif commodity == "lng":
+            df = df[df.siec.isin(["G3200"]) & df.unit.isin(["TJ_GCV"])]
 
-    sum_ds = df_nlargest.sum(axis=0)
+        if mode in set(["import", "export"]):
+            df = df[~df.partner.isin(eu27)]
 
-    df_nlargest.loc["Other", :] = total_ds - sum_ds
+        if mode == "production":
+            df = df[df.nrg_bal.isin(["IPRD"])]
 
-    df_single_year = df_nlargest.loc[:, 2020]
+        df.fillna(0, inplace=True)
+
+        groupby_dict = {"import": "partner", "export": "partner", "production": "geo"}
+        groupby_val = groupby_dict.get(mode)
+        df_grouped = df.groupby(groupby_val).sum().sort_values(by=year, ascending=False)
+
+        # Delete "TOTAL", "NSP", add "Others"
+        if "TOTAL" in df_grouped.index:
+            df_grouped.drop(["TOTAL"], axis=0, inplace=True)
+        total_all = df_grouped.sum(axis=0)
+
+        if "NSP" in df_grouped.index:
+            df_grouped.drop(["NSP"], axis=0, inplace=True)
+
+        df_nlargest = df_grouped.nlargest(nlargest, year)
+        sum_nlargest = df_nlargest.sum(axis=0)
+
+        df_nlargest.loc["Other", :] = total_all - sum_nlargest
+
+        # Change unit
+        if "gas" in table_name:
+            df_nlargest = df_nlargest / 3600  # TJ -> TWh
+
+        # Single year value for pie chart
+        df_single_year = df_nlargest.loc[:, year]
+
+        # Save results
+        df_nlargest.to_excel(fileDir_all)
+        df_single_year.to_excel(fileDir_single)
+
     return df_nlargest, df_single_year
 
 
@@ -101,7 +118,7 @@ def get_fzjColor():
 
 
 def get_lng_storage():
-    lng_df = pd.read_excel("Input/lng_data_5a.xlsx")
+    lng_df = pd.read_excel("Input/Storage/lng_data_5a.xlsx")
     lng_df["dtmi"] = lng_df["dtmi"] * LHV_LNG
     lng_df["lngInventory"] = lng_df["lngInventory"] * LHV_LNG
     lng_df["dtmi_median"] = lng_df["dtmi"].median()
@@ -111,7 +128,7 @@ def get_lng_storage():
 
 
 def get_ng_storage():
-    gng_df = pd.read_excel("Input/storage_data_5a.xlsx")
+    gng_df = pd.read_excel("Input/Storage/storage_data_5a.xlsx")
     gng_df["workingGasVolume_median"] = gng_df["workingGasVolume"].median()
     gng_df["withdrawalCapacity_median"] = gng_df["withdrawalCapacity"].median()
     gng_df["free_cap"] = gng_df["workingGasVolume_median"] - gng_df["gasInStorage"]

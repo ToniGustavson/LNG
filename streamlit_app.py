@@ -15,10 +15,20 @@ FZJcolor = get_fzjColor()
 lng_df = get_lng_storage()
 gng_df = get_ng_storage()
 
-ng_imports, ng_import_pie = get_eurostat_data("ng", 7)
-lng_imports, lng_import_pie = get_eurostat_data("lng", 7)
-oil_imports, oil_import_pie = get_eurostat_data("oil", 16)
-sff_imports, sff_import_pie = get_eurostat_data("sff", 7)
+ng_imports, ng_import_pie = get_eurostat_data("ng", "import", 7)
+lng_imports, lng_import_pie = get_eurostat_data("lng", "import", 7)
+oil_imports, oil_import_pie = get_eurostat_data("oil", "import", 12)
+sff_imports, sff_import_pie = get_eurostat_data("sff", "import", 7)
+
+ng_production, ng_production_pie = get_eurostat_data("ng", "production", 7)
+lng_production, lng_production_pie = get_eurostat_data("lng", "production", 7)
+oil_production, oil_production_pie = get_eurostat_data("oil", "production", 12)
+sff_production, sff_production_pie = get_eurostat_data("sff", "production", 7)
+
+ng_exports, ng_export_pie = get_eurostat_data("ng", "export", 7)
+lng_exports, lng_export_pie = get_eurostat_data("lng", "export", 7)
+oil_exports, oil_export_pie = get_eurostat_data("oil", "export", 12)
+sff_exports, sff_export_pie = get_eurostat_data("sff", "export", 7)
 
 # Pipelines
 pl_opal = get_OPAL()
@@ -60,6 +70,57 @@ def get_color(key, default_col="blue"):
     return {"RU": FZJcolor.get(default_col)}.get(key, FZJcolor.get("grey1"))
 
 
+def eurostat_plots(name, df_all, df_single, streamlit_obj):
+    fig = go.Figure()
+    years = df_all.columns
+
+    for _, row in df_all.iterrows():
+        if "import" in name.lower():
+            marker_dict = dict(color=get_color(row.name))
+        else:
+            marker_dict = None
+        fig.add_trace(
+            go.Scatter(
+                x=years,
+                y=row.values,
+                stackgroup="one",
+                name=row.name,
+                marker=marker_dict,
+            )
+        )
+    fig.update_layout(
+        title=name, font=dict(size=16),
+    )
+
+    streamlit_obj.plotly_chart(fig, use_container_width=True)
+    streamlit_obj.caption("Source: Eurostat, 2022")
+
+    # Pie Chart
+    try:
+        if "import" in name.lower():
+            colors = [get_color(x) for x in df_single.index]
+            marker_dict = dict(colors=colors)
+        else:
+            marker_dict = None
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Pie(
+                labels=df_single.index,
+                values=df_single.values,
+                hole=0.3,
+                marker=marker_dict,
+            )
+        )
+        fig.update_layout(
+            title=f"{name} (2020)", font=dict(size=16),
+        )
+        streamlit_obj.plotly_chart(fig, use_container_width=True)  #
+        streamlit_obj.caption("Source: Eurostat, 2022")
+    except:
+        streamlit_obj.text("")
+
+
 legend_dict = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
 font_dict = dict(size=18)
 
@@ -91,147 +152,60 @@ st.markdown(
 )
 
 
+# Import
 cols = st.columns(4)
+eurostat_plots("Natural gas import [TWh]", ng_imports, ng_import_pie, cols[0])
+eurostat_plots("LNG import [TWh]", lng_imports, lng_import_pie, cols[1])
+eurostat_plots("Solid fuels import [kt]", sff_imports, sff_import_pie, cols[2])
+eurostat_plots("Crude oil import [kt]", oil_imports, oil_import_pie, cols[3])
 
-# Natrural Gas Import
-### Timeline
-fig = go.Figure()
-years = ng_imports.columns
-for idx, row in ng_imports.iterrows():
-    fig.add_trace(
-        go.Scatter(
-            x=years,
-            y=row.values,
-            stackgroup="one",
-            name=row.name,
-            marker=dict(color=get_color(row.name)),
-        )
-    )
-fig.update_layout(
-    title="Natural gas", font=dict(size=16),
+# Production
+cols = st.columns(4)
+eurostat_plots(
+    "Natural gas production [TWh]", ng_production, ng_production_pie, cols[0]
 )
-cols[0].plotly_chart(fig, use_container_width=True)
-cols[0].caption("Source: Eurostat, 2022")
-
-colors = [get_color(x) for x in ng_import_pie.index]
-fig = go.Figure()
-fig.add_trace(
-    go.Pie(
-        labels=ng_import_pie.index,
-        values=ng_import_pie.values,
-        hole=0.3,
-        marker=dict(colors=colors),
-    )
+eurostat_plots("LNG production [TWh]", lng_production, lng_production_pie, cols[1])
+eurostat_plots(
+    "Solid fuels production [kt]", sff_production, sff_production_pie, cols[2]
 )
-cols[0].plotly_chart(fig, use_container_width=True)
-cols[0].caption("Source: Eurostat, 2022")
+eurostat_plots("Crude oil production [kt]", oil_production, oil_production_pie, cols[3])
+
+# Export
+cols = st.columns(4)
+eurostat_plots("Natural gas export [TWh]", ng_exports, ng_export_pie, cols[0])
+eurostat_plots("LNG export [TWh]", lng_exports, lng_export_pie, cols[1])
+eurostat_plots("Solid fuels export [kt]", sff_exports, sff_export_pie, cols[2])
+eurostat_plots("Crude oil export [kt]", oil_exports, oil_export_pie, cols[3])
 
 
-# LNG Import
-
-### Timeline
-fig = go.Figure()
-years = ng_imports.columns
-for idx, row in lng_imports.iterrows():
-    fig.add_trace(
-        go.Scatter(
-            x=years,
-            y=row.values,
-            stackgroup="one",
-            name=row.name,
-            marker=dict(color=get_color(row.name)),
-        )
-    )
-fig.update_layout(
-    title="LNG", font=dict(size=16),
-)
-cols[1].plotly_chart(fig, use_container_width=True)
-cols[1].caption("Source: Eurostat, 2022")
+# # Natrural Gas
+# cols = st.columns(3)
+# eurostat_plots("Natural gas import [TWh]", ng_imports, ng_import_pie, cols[0])
+# eurostat_plots(
+#     "Natural gas production [TWh]", ng_production, ng_production_pie, cols[1]
+# )
+# eurostat_plots("Natural gas export [TWh]", ng_exports, ng_export_pie, cols[2])
 
 
-colors = [get_color(x) for x in lng_import_pie.index]
-fig = go.Figure()
-fig.add_trace(
-    go.Pie(
-        labels=lng_import_pie.index,
-        values=lng_import_pie.values,
-        hole=0.3,
-        marker=dict(colors=colors),
-    )
-)
-cols[1].plotly_chart(fig, use_container_width=True)
-cols[1].caption("Source: Eurostat, 2022")
+# # LNG Import
+# cols = st.columns(3)
+# eurostat_plots("LNG import [TWh]", lng_imports, lng_import_pie, cols[0])
+# eurostat_plots("LNG production [TWh]", lng_production, lng_production_pie, cols[1])
+# eurostat_plots("LNG export [TWh]", lng_exports, lng_export_pie, cols[2])
 
+# # Solid fuels Import
+# cols = st.columns(3)
+# eurostat_plots("Solid fuels import [kt]", sff_imports, sff_import_pie, cols[0])
+# eurostat_plots(
+#     "Solid fuels production [kt]", sff_production, sff_production_pie, cols[1]
+# )
+# eurostat_plots("Solid fuels export [kt]", sff_exports, sff_export_pie, cols[2])
 
-# Solid Fuels
-
-### Timeline
-fig = go.Figure()
-years = ng_imports.columns
-for idx, row in sff_imports.iterrows():
-    fig.add_trace(
-        go.Scatter(
-            x=years,
-            y=row.values,
-            stackgroup="one",
-            name=row.name,
-            marker=dict(color=get_color(row.name)),
-        )
-    )
-fig.update_layout(
-    title="Solid fuels", font=dict(size=16),
-)
-cols[2].plotly_chart(fig, use_container_width=True)
-cols[2].caption("Source: Eurostat, 2022")
-
-colors = [get_color(x) for x in sff_import_pie.index]
-fig = go.Figure()
-fig.add_trace(
-    go.Pie(
-        labels=sff_import_pie.index,
-        values=sff_import_pie.values,
-        hole=0.3,
-        marker=dict(colors=colors),
-    )
-)
-cols[2].plotly_chart(fig, use_container_width=True)
-cols[2].caption("Source: Eurostat, 2022")
-
-
-# Crude oil imports
-
-### Timeline
-fig = go.Figure()
-years = ng_imports.columns
-for idx, row in oil_imports.iterrows():
-    fig.add_trace(
-        go.Scatter(
-            x=years,
-            y=row.values,
-            stackgroup="one",
-            name=row.name,
-            marker=dict(color=get_color(row.name)),
-        )
-    )
-fig.update_layout(
-    title="Crude oil", font=dict(size=16),
-)
-cols[3].plotly_chart(fig, use_container_width=True)
-cols[3].caption("Source: Eurostat, 2022")
-
-colors = [get_color(x) for x in oil_import_pie.index]
-fig = go.Figure()
-fig.add_trace(
-    go.Pie(
-        labels=oil_import_pie.index,
-        values=oil_import_pie.values,
-        hole=0.3,
-        marker=dict(colors=colors),
-    )
-)
-
-cols[3].plotly_chart(fig, use_container_width=True)
-cols[3].caption("Source: Eurostat, 2019")
+# # Solid fuels Import
+# cols = st.columns(3)
+# eurostat_plots("Crude oil import [kt]", oil_imports, oil_import_pie, cols[0])
+# eurostat_plots("Crude oil production [kt]", oil_production, oil_production_pie, cols[1])
+# eurostat_plots("Crude oil export [kt]", oil_exports, oil_export_pie, cols[2])
 
 
 # Pipeline Flow
@@ -416,6 +390,7 @@ fig.update_layout(
     legend=legend_dict,
     barmode="stack",
 )
+fig.update_layout(hovermode="x unified")
 
 
 st.plotly_chart(fig, use_container_width=True)
