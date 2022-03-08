@@ -4,3 +4,4 @@ openpyxl
 matplotlib
 mathjax
 plotly
+eurostat
