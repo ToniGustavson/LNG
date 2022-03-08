@@ -139,30 +139,30 @@ pl_berge = get_VIP_Bereg()
 
 fig = go.Figure()
 # fig.add_trace(go.Scatter(x=xval, y=opal_df["value"],stackgroup='one', name = f"OPAL (Nord Stream 1, Ø {annual_mean(opal_df['value'], 10**3)} TWh/a)",  marker=dict(color= FZJcolor.get("blue2"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_opal["value"],stackgroup='one', name = "OPAL (DE)",  marker=dict(color= FZJcolor.get("green"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_nel["value"],stackgroup='one', name = f"NEL (DE)",  marker=dict(color= FZJcolor.get("green"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_kondratki["value"],stackgroup='one', name = f"Kondratki (PL)",  marker=dict(color= FZJcolor.get("red"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_kipoi["value"],stackgroup='one', name = f"Kipoi (GR)",  marker=dict(color= FZJcolor.get("grey3"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_wysokoje["value"],stackgroup='one', name = f"Wysokoje (PL)",  marker=dict(color= FZJcolor.get("red"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_drozdovichi["value"],stackgroup='one', name = f"Drozdovichi (PL)",  marker=dict(color= FZJcolor.get("red"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_imatra["value"],stackgroup='one', name = f"Imatra (FI)",  marker=dict(color= FZJcolor.get("red"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_opal["value"],stackgroup='one', name = "OPAL (DE)",  marker=dict(color= FZJcolor.get("blue2"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_nel["value"],stackgroup='one', name = f"NEL (DE)",  marker=dict(color= FZJcolor.get("blue2"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_kondratki["value"],stackgroup='one', name = f"Kondratki (PL)",  marker=dict(color= FZJcolor.get("green"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_wysokoje["value"],stackgroup='one', name = f"Wysokoje (PL)",  marker=dict(color= FZJcolor.get("green"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_drozdovichi["value"],stackgroup='one', name = f"Drozdovichi (PL)",  marker=dict(color= FZJcolor.get("green"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_isaccea1["value"],stackgroup='one', name = f"Isaccea I (RO)",  marker=dict(color= FZJcolor.get("orange"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_isaccea2["value"],stackgroup='one', name = f"Isaccea II (RO)",  marker=dict(color= FZJcolor.get("orange"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_isaccea3["value"],stackgroup='one', name = f"Isaccea III (RO)",  marker=dict(color= FZJcolor.get("orange"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_isaccea0["value"],stackgroup='one', name = f"Isaccea (RO)",  marker=dict(color= FZJcolor.get("orange"))))
-fig.add_trace(go.Scatter(x=xval, y=pl_kotlovka["value"],stackgroup='one', name = f"Kotlovka (LT)",  marker=dict(color= FZJcolor.get("yellow"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_mediesu["value"],stackgroup='one', name = f"Mediesu Aurit (RO)",  marker=dict(color= FZJcolor.get("orange"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_kotlovka["value"],stackgroup='one', name = f"Kotlovka (LT)",  marker=dict(color= FZJcolor.get("yellow"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_narva["value"],stackgroup='one', name = f"Narva (EE)",  marker=dict(color= FZJcolor.get("lblue"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_varska["value"],stackgroup='one', name = f"Värska (EE)",  marker=dict(color= FZJcolor.get("lblue"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_standzha["value"],stackgroup='one', name = f"Strandzha (BG)",  marker=dict(color= FZJcolor.get("pink"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_berge["value"],stackgroup='one', name = f"VIP Bereg (BG)",  marker=dict(color= FZJcolor.get("pink"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_kipoi["value"],stackgroup='one', name = f"Kipoi (GR)",  marker=dict(color= FZJcolor.get("grey3"))))
+fig.add_trace(go.Scatter(x=xval, y=pl_imatra["value"],stackgroup='one', name = f"Imatra (FI)",  marker=dict(color= FZJcolor.get("yellow"))))
 fig.add_trace(go.Scatter(x=xval, y=pl_velke["value"],stackgroup='one', name = f"Velke Kapusany (SK)",  marker=dict(color= FZJcolor.get("blue"))))
 
 
 fig.update_layout(
     title="EU pipeline imports from Russia",
     yaxis_title= "NG [GWh/d]",
-    yaxis=dict(range=[0, 6700]),
+    yaxis=dict(range=[0, 7000]),
     font=font_dict,
     legend=legend_dict,
     barmode='stack',
