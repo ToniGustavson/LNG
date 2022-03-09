@@ -31,7 +31,7 @@ oil_exports, oil_export_pie = get_eurostat_data("oil", "export", 12)
 sff_exports, sff_export_pie = get_eurostat_data("sff", "export", 7)
 
 # Pipelines
-pl_import_all = get_pipeline_data()
+pl_import = get_pipeline_data()
 
 # pl_opal = get_OPAL()
 # pl_nel = get_NEL()
