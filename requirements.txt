@@ -5,5 +5,3 @@ matplotlib
 mathjax
 plotly
 eurostat
-os
-numpy
