@@ -3,6 +3,8 @@ import eurostat
 import os
 
 LHV_LNG = 0.006291  # kWh/m3 = MWh/10^3m3
+
+de = ["DE"]
 eu27 = [
     "AT",
     "BE",
@@ -300,8 +302,24 @@ def get_VIP_Bereg():
 
 def get_pipeline_data_single(dir, file):
     df = pd.read_excel(os.path.join(dir, file))
+    df.loc[:, "value"] = pd.to_numeric(df.loc[:, "value"])
     df.loc[:, "value"] = df.loc[:, "value"] / 10 ** 6  # kWh/d -> GWh/d
-    return df.loc[:, "value"]
+    df.loc[:, "periodFrom"] = [
+        f"{x[:-6]}" for x in df.loc[:, "periodFrom"]
+    ]  # pd.to_datetime(df.loc[:, "periodFrom"])
+
+    # value = df.loc[:, "value"]
+    # value = value[len(value) - 1836 :]
+
+    # columns = pd.to_datetime(df.loc[:, "periodFrom"])
+    # columns = columns[len(columns) - 1836 :]
+    # # columns = [f"{x[:-6]}" for x in columns]
+
+    index = file.replace(".xlsx", "")
+
+    df_red = df.loc[:, ["value", "periodFrom"]]
+    df_red.rename(columns={"value": index}, inplace=True)
+    return df_red
 
 
 def get_pipeline_columns(dir, file):
@@ -309,23 +327,30 @@ def get_pipeline_columns(dir, file):
     return list(df.loc[:, "periodFrom"])
 
 
-def get_pipeline_data(local=False):
+def get_pipeline_data(local=True):
     dir = "Input/Pipeline_Transportation"
     fileName = "Pipelines_Russia_EU.xlsx"
     fileDir = os.path.join(dir, fileName)
     if local:
-        pd.read_excel(fileDir, index_col=0)
+        return pd.read_excel(fileDir.replace(".xlsx", "_renamed.xlsx"), index_col=0)
     else:
         file_names = os.listdir(dir)
-        data = []
-        names = []
+        df = pd.DataFrame()
+        firstRun = True
         for file in file_names:
             if "xlsx" in file and file != fileName:
-                pl_data_single = get_pipeline_data_single(dir, file)
-                names.append(file.replace(".xlsx", ""))
-                data.append(pl_data_single)
-        columns = get_pipeline_columns(dir, file)
-        columns = [f"{x[:-6]}" for x in columns]
-        pl_data = pd.DataFrame(data, index=names, columns=[columns])
-        pl_data.fillna(0, inplace=True)
-        pl_data.to_excel(fileDir)
+                df_single = get_pipeline_data_single(dir, file)
+                if firstRun:
+                    df = df_single.copy()
+                    firstRun = False
+                else:
+                    df = pd.merge(df, df_single, on="periodFrom", how="outer")
+        df.fillna(0, inplace=True)
+        df.sort_values("periodFrom", axis=0, ascending=True, inplace=True)
+        df.drop_duplicates(subset=["periodFrom"], inplace=True)
+        df.loc[:, "periodFrom"] = pd.to_datetime(df.loc[:, "periodFrom"])
+        df.index = df.periodFrom
+        df = df.drop(labels=["periodFrom"], axis=1)
+        df = df.transpose()
+        df.to_excel(fileDir)
+        return df
