@@ -1,5 +1,6 @@
 import pandas as pd
 import eurostat
+import os
 
 LHV_LNG = 0.006291  # kWh/m3 = MWh/10^3m3
 eu27 = [
@@ -296,3 +297,35 @@ def get_VIP_Bereg():
     df.loc[:, "value"] = df.loc[:, "value"] / 10 ** 6  # kWh/d -> GWh/d
     return df
 
+
+def get_pipeline_data_single(dir, file):
+    df = pd.read_excel(os.path.join(dir, file))
+    df.loc[:, "value"] = df.loc[:, "value"] / 10 ** 6  # kWh/d -> GWh/d
+    return df.loc[:, "value"]
+
+
+def get_pipeline_columns(dir, file):
+    df = pd.read_excel(os.path.join(dir, file))
+    return list(df.loc[:, "periodFrom"])
+
+
+def get_pipeline_data(local=False):
+    dir = "Input/Pipeline_Transportation"
+    fileName = "Pipelines_Russia_EU.xlsx"
+    fileDir = os.path.join(dir, fileName)
+    if local:
+        pd.read_excel(fileDir, index_col=0)
+    else:
+        file_names = os.listdir(dir)
+        data = []
+        names = []
+        for file in file_names:
+            if "xlsx" in file and file != fileName:
+                pl_data_single = get_pipeline_data_single(dir, file)
+                names.append(file.replace(".xlsx", ""))
+                data.append(pl_data_single)
+        columns = get_pipeline_columns(dir, file)
+        columns = [f"{x[:-6]}" for x in columns]
+        pl_data = pd.DataFrame(data, index=names, columns=[columns])
+        pl_data.fillna(0, inplace=True)
+        pl_data.to_excel(fileDir)
