@@ -40,7 +40,7 @@ def get_eu27():
     return eu27
 
 
-def get_eurostat_data(commodity, mode, region, nlargest, year=2020):  # , local=True
+def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     if region == "EU27":
         regions = get_eu27()
     else:
@@ -48,12 +48,13 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):  # , local=
 
     # eu27 = get_eu27()
     # region_dict = {"EU": eu27, "DE": de}
-    fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.xlsx"
-    fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.xlsx"
+    fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"
+    fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.csv"
 
     if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
-        df_nlargest = pd.read_excel(fileDir_all, index_col=0)
-        df_single_year = pd.read_excel(fileDir_single, index_col=0).squeeze()
+        df_nlargest = pd.read_csv(fileDir_all, index_col=0)
+        df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
+        pass
     else:
         mode_dict = {"import": "ti", "export": "te", "production": "cb"}
         mode_table = mode_dict.get(mode)
@@ -109,8 +110,8 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):  # , local=
         df_single_year = df_nlargest.loc[:, year]
 
         # Save results
-        df_nlargest.to_excel(fileDir_all)
-        df_single_year.to_excel(fileDir_single)
+        df_nlargest.to_csv(fileDir_all)
+        df_single_year.to_csv(fileDir_single)
 
     return df_nlargest, df_single_year
 

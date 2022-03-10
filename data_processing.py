@@ -23,7 +23,6 @@ for value in soc_max_day:
     soc_max_hour = soc_max_hour + 24 * hour_val
 
 
-pass
 # gasDayStartedOn
 # gasInStorage
 

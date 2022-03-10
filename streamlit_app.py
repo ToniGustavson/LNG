@@ -147,9 +147,6 @@ st.markdown(
 )
 
 
-# Import
-# with st.expander("Import", expanded=True):
-
 cols = st.columns(2)
 region_list = get_eu27()
 region_list = ["EU27"] + region_list
@@ -158,6 +155,7 @@ balance = cols[1].multiselect("Balance", ["Import", "Production", "Export"], ["I
 
 # Import
 if "Import" in balance:
+    # with st.expander("Import", expanded=True):
     st.markdown("## Import")
     ng_imports, ng_import_pie = get_eurostat_data("ng", "import", region, 7)
     lng_imports, lng_import_pie = get_eurostat_data("lng", "import", region, 7)
@@ -529,7 +527,7 @@ fig = go.Figure()
 fig.add_trace(
     go.Line(
         x=xval,
-        y=lng_df["dtrs_median"],
+        y=lng_df["dtrs"],  # dtrs_median
         name=f"Max send out (Ø {int(lng_df['dtrs_median'].mean()*365/10**3)} TWh/a)",
         marker=dict(color=FZJcolor.get("black")),
     )
