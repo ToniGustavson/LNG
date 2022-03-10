@@ -15,20 +15,6 @@ FZJcolor = get_fzjColor()
 lng_df = get_lng_storage()
 gng_df = get_ng_storage()
 
-ng_imports, ng_import_pie = get_eurostat_data("ng", "import", 7)
-lng_imports, lng_import_pie = get_eurostat_data("lng", "import", 7)
-oil_imports, oil_import_pie = get_eurostat_data("oil", "import", 12)
-sff_imports, sff_import_pie = get_eurostat_data("sff", "import", 7)
-
-ng_production, ng_production_pie = get_eurostat_data("ng", "production", 7)
-lng_production, lng_production_pie = get_eurostat_data("lng", "production", 7)
-oil_production, oil_production_pie = get_eurostat_data("oil", "production", 12)
-sff_production, sff_production_pie = get_eurostat_data("sff", "production", 7)
-
-ng_exports, ng_export_pie = get_eurostat_data("ng", "export", 7)
-lng_exports, lng_export_pie = get_eurostat_data("lng", "export", 7)
-oil_exports, oil_export_pie = get_eurostat_data("oil", "export", 12)
-sff_exports, sff_export_pie = get_eurostat_data("sff", "export", 7)
 
 # Pipelines
 pl_import = get_pipeline_data()
@@ -155,7 +141,7 @@ st.markdown(
 )
 
 
-st.markdown("## EU energy imports by country of origin")
+st.markdown("## Energy imports by country of origin")
 st.markdown(
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
 )
@@ -163,31 +149,69 @@ st.markdown(
 
 # Import
 # with st.expander("Import", expanded=True):
-st.markdown("## Import")
-cols = st.columns(4)
-eurostat_plots("Natural gas", "import", ng_imports, ng_import_pie, cols[0])
-eurostat_plots("LNG", "import", lng_imports, lng_import_pie, cols[1])
-eurostat_plots("Solid fuels", "import", sff_imports, sff_import_pie, cols[2])
-eurostat_plots("Crude oil", "import", oil_imports, oil_import_pie, cols[3])
-st.caption("Source: Eurostat, 2022")
+
+cols = st.columns(2)
+region_list = get_eu27()
+region_list = ["EU27"] + region_list
+region = cols[0].selectbox("Region", region_list, 0)
+balance = cols[1].multiselect("Balance", ["Import", "Production", "Export"], ["Import"])
+
+# Import
+if "Import" in balance:
+    st.markdown("## Import")
+    ng_imports, ng_import_pie = get_eurostat_data("ng", "import", region, 7)
+    lng_imports, lng_import_pie = get_eurostat_data("lng", "import", region, 7)
+    oil_imports, oil_import_pie = get_eurostat_data("oil", "import", region, 12)
+    sff_imports, sff_import_pie = get_eurostat_data("sff", "import", region, 7)
+
+    cols = st.columns(4)
+    eurostat_plots("Natural gas", "import", ng_imports, ng_import_pie, cols[0])
+    eurostat_plots("LNG", "import", lng_imports, lng_import_pie, cols[1])
+    eurostat_plots("Solid fuels", "import", sff_imports, sff_import_pie, cols[2])
+    eurostat_plots("Crude oil", "import", oil_imports, oil_import_pie, cols[3])
+    st.caption("Source: Eurostat, 2022")
 
 # Production
-# with st.expander("Production", expanded=True):
-st.markdown("## Production")
-cols = st.columns(4)
-eurostat_plots("Natural gas", "production", ng_production, ng_production_pie, cols[0])
-eurostat_plots("LNG", "production", lng_production, lng_production_pie, cols[1])
-eurostat_plots("Solid fuels", "production", sff_production, sff_production_pie, cols[2])
-eurostat_plots("Crude oil", "production", oil_production, oil_production_pie, cols[3])
+if "Production" in balance:
+    # with st.expander("Production", expanded=True):
+    st.markdown("## Production")
+    ng_production, ng_production_pie = get_eurostat_data("ng", "production", region, 7)
+    lng_production, lng_production_pie = get_eurostat_data(
+        "lng", "production", region, 7
+    )
+    oil_production, oil_production_pie = get_eurostat_data(
+        "oil", "production", region, 7
+    )
+    sff_production, sff_production_pie = get_eurostat_data(
+        "sff", "production", region, 7
+    )
+
+    cols = st.columns(4)
+    eurostat_plots(
+        "Natural gas", "production", ng_production, ng_production_pie, cols[0]
+    )
+    eurostat_plots("LNG", "production", lng_production, lng_production_pie, cols[1])
+    eurostat_plots(
+        "Solid fuels", "production", sff_production, sff_production_pie, cols[2]
+    )
+    eurostat_plots(
+        "Crude oil", "production", oil_production, oil_production_pie, cols[3]
+    )
 
 # Export
-# with st.expander("Export", expanded=False):
-st.markdown("## Export")
-cols = st.columns(4)
-eurostat_plots("Natural gas", "export", ng_exports, ng_export_pie, cols[0])
-eurostat_plots("LNG", "export", lng_exports, lng_export_pie, cols[1])
-eurostat_plots("Solid fuels", "export", sff_exports, sff_export_pie, cols[2])
-eurostat_plots("Crude oil", "export", oil_exports, oil_export_pie, cols[3])
+if "Export" in balance:
+    # with st.expander("Export", expanded=False):
+    st.markdown("## Export")
+    ng_exports, ng_export_pie = get_eurostat_data("ng", "export", region, 7)
+    lng_exports, lng_export_pie = get_eurostat_data("lng", "export", region, 7)
+    oil_exports, oil_export_pie = get_eurostat_data("oil", "export", region, 7)
+    sff_exports, sff_export_pie = get_eurostat_data("sff", "export", region, 7)
+
+    cols = st.columns(4)
+    eurostat_plots("Natural gas", "export", ng_exports, ng_export_pie, cols[0])
+    eurostat_plots("LNG", "export", lng_exports, lng_export_pie, cols[1])
+    eurostat_plots("Solid fuels", "export", sff_exports, sff_export_pie, cols[2])
+    eurostat_plots("Crude oil", "export", oil_exports, oil_export_pie, cols[3])
 
 
 # Pipeline Flow

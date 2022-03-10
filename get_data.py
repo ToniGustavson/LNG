@@ -5,41 +5,53 @@ import os
 LHV_LNG = 0.006291  # kWh/m3 = MWh/10^3m3
 
 de = ["DE"]
-eu27 = [
-    "AT",
-    "BE",
-    "BG",
-    "HR",
-    "CY",
-    "CZ",
-    "DK",
-    "EE",
-    "FI",
-    "FR",
-    "DE",
-    "GR",
-    "HU",
-    "IE",
-    "IT",
-    "LV",
-    "LT",
-    "LU",
-    "MT",
-    "NL",
-    "PL",
-    "PT",
-    "RO",
-    "SK",
-    "SI",
-    "ES",
-    "SE",
-]
 
 
-def get_eurostat_data(commodity, mode, nlargest, year=2020, local=True):
-    fileDir_all = f"Input/Eurostat/{commodity}_{mode}.xlsx"
-    fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{year}.xlsx"
-    if local:
+def get_eu27():
+    eu27 = [
+        "DE",
+        "AT",
+        "BE",
+        "BG",
+        "HR",
+        "CY",
+        "CZ",
+        "DK",
+        "EE",
+        "FI",
+        "FR",
+        "GR",
+        "HU",
+        "IE",
+        "IT",
+        "LV",
+        "LT",
+        "LU",
+        "MT",
+        "NL",
+        "PL",
+        "PT",
+        "RO",
+        "SK",
+        "SI",
+        "ES",
+        "SE",
+    ]
+    return eu27
+
+
+def get_eurostat_data(commodity, mode, region, nlargest, year=2020):  # , local=True
+    if region == "EU27":
+        regions = get_eu27()
+    else:
+        regions = [region]
+
+    # eu27 = get_eu27()
+    # region_dict = {"EU": eu27, "DE": de}
+    fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.xlsx"
+    fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.xlsx"
+
+    if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
         df_nlargest = pd.read_excel(fileDir_all, index_col=0)
         df_single_year = pd.read_excel(fileDir_single, index_col=0).squeeze()
     else:
@@ -56,7 +68,8 @@ def get_eurostat_data(commodity, mode, nlargest, year=2020, local=True):
         df = eurostat.get_data_df(table_name)
         df.rename({"geo\\time": "geo"}, inplace=True, axis=1)
 
-        df = df[df.geo.isin(eu27)]
+        # regions = region_dict.get(region)
+        df = df[df.geo.isin(regions)]
 
         if commodity == "ng":
             df = df[df.siec.isin(["G3000"]) & df.unit.isin(["TJ_GCV"])]
@@ -64,7 +77,7 @@ def get_eurostat_data(commodity, mode, nlargest, year=2020, local=True):
             df = df[df.siec.isin(["G3200"]) & df.unit.isin(["TJ_GCV"])]
 
         if mode in set(["import", "export"]):
-            df = df[~df.partner.isin(eu27)]
+            df = df[~df.partner.isin(regions)]
 
         if mode == "production":
             df = df[df.nrg_bal.isin(["IPRD"])]
