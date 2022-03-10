@@ -114,7 +114,7 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-
+st.text("")
 st.markdown("# Energy imports from Russia and possible alternatives")
 st.markdown(
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
@@ -129,20 +129,28 @@ st.markdown(
 cols = st.columns(2)
 
 pl_reduction = cols[0].slider(
-    "Reduction of russion gas imports [%]",
+    "Reduction of Russian gas imports [%]",
     min_value=0,
     max_value=100,
-    value=10,
+    value=90,
     step=10,
 )
 lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
 
+cols[0].markdown("### Supply and demand")
+try:
+    cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+except:
+    cols[0].markdown("No image available")
 
-cols[0].markdown("Supply and demand")
-cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+cols[1].markdown("### Storage")
+try:
+    cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+except:
+    cols[0].markdown("No image available")
 
-cols[1].markdown("Storage")
-cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+
+st.text("")
 
 st.markdown("## Energy imports, production and export by country")
 st.markdown(
