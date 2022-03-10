@@ -1,6 +1,7 @@
 import pandas as pd
 import eurostat
 import os
+from PIL import Image
 
 LHV_LNG = 0.006291  # kWh/m3 = MWh/10^3m3
 
@@ -40,6 +41,14 @@ def get_eu27():
     return eu27
 
 
+def get_optiImage(mode, pl_reduction, lng_capacity):
+    file_dict = {"Storage": "GasSocScen", "Flow": "GasFlowScen"}
+    fileName = f"{file_dict.get(mode)}{pl_reduction}_{int(lng_capacity*10)}.png"
+    fileDir = f"Input/Optimization/{fileName}"
+    image = Image.open(fileDir)
+    return image
+
+
 def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     if region == "EU27":
         regions = get_eu27()
@@ -53,6 +62,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
 
     if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
         df_nlargest = pd.read_csv(fileDir_all, index_col=0)
+        df_nlargest = df_nlargest.sort_index(axis=1)
         df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
         pass
     else:
@@ -101,6 +111,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         sum_nlargest = df_nlargest.sum(axis=0)
 
         df_nlargest.loc["Other", :] = total_all - sum_nlargest
+        df_nlargest = df_nlargest.sort_index(axis=1)
 
         # Change unit
         if "gas" in table_name:
@@ -132,6 +143,23 @@ def get_fzjColor():
 
     FZJcolor_dict = dict(zip(col_names, hex_vals))
     return FZJcolor_dict
+
+
+def get_countryColor(country, FZJcolor):
+    color_dict = {
+        "DE": "blue2",
+        "PL": "green",
+        "RO": "orange",
+        "LT": "yellow",
+        "GR": "grey3",
+        "EE": "lblue",
+        "BG": "pink",
+        "SK": "blue",
+        "FI": "yellow",
+    }
+    col_name = color_dict.get(country, "black")
+    color_val = FZJcolor.get(col_name)
+    return color_val
 
 
 def get_lng_storage():

@@ -7,7 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 from get_data import *
-
+from PIL import Image
 
 #%%
 # Get Data
@@ -19,29 +19,9 @@ gng_df = get_ng_storage()
 # Pipelines
 pl_import = get_pipeline_data()
 
-# pl_opal = get_OPAL()
-# pl_nel = get_NEL()
-# pl_wysokoje = get_Wysokoje()
-# pl_drozdovichi = get_Drozdovichi()
-# pl_imatra = get_Imatra()
-# pl_isaccea1 = get_Isaccea1()
-# pl_isaccea2 = get_Isaccea2()
-# pl_isaccea3 = get_Isaccea3()
-# pl_isaccea0 = get_Isaccea0()
-# pl_kipoi = get_Kipoi()
-# pl_kondratki = get_Kondratki()
-# pl_kotlovka = get_Kotlovka()
-# pl_mediesu = get_Mediesu_Aurit()
-# pl_narva = get_Narva()
-# pl_standzha = get_Strandzha()
-# pl_varska = get_Värska()
-# pl_velke = get_Velke_Kapusany()
-# pl_berge = get_VIP_Bereg()
-
-
-ng_share = get_ng_share()
-solid_fuel_share = get_solid_fuel_share()
-crude_oil_share = get_crude_oil_share()
+# ng_share = get_ng_share()
+# solid_fuel_share = get_solid_fuel_share()
+# crude_oil_share = get_crude_oil_share()
 
 xval = lng_df["gasDayStartedOn"]
 
@@ -141,7 +121,30 @@ st.markdown(
 )
 
 
-st.markdown("## Energy imports by country of origin")
+st.markdown("## Scenario calculation: Reduction of Russian gas imports")
+st.markdown(
+    "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
+)
+
+cols = st.columns(2)
+
+pl_reduction = cols[0].slider(
+    "Reduction of russion gas imports [%]",
+    min_value=0,
+    max_value=100,
+    value=10,
+    step=10,
+)
+lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
+
+
+cols[0].markdown("Supply and demand")
+cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+
+cols[1].markdown("Storage")
+cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+
+st.markdown("## Energy imports, production and export by country")
 st.markdown(
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
 )
@@ -152,64 +155,66 @@ region_list = get_eu27()
 region_list = ["EU27"] + region_list
 region = cols[0].selectbox("Region", region_list, 0)
 balance = cols[1].multiselect("Balance", ["Import", "Production", "Export"], ["Import"])
+with st.spinner(text="Connecting to Eurostat Database..."):
+    # Import
+    if "Import" in balance:
+        # with st.expander("Import", expanded=True):
+        st.markdown("## Import")
+        ng_imports, ng_import_pie = get_eurostat_data("ng", "import", region, 7)
+        lng_imports, lng_import_pie = get_eurostat_data("lng", "import", region, 7)
+        oil_imports, oil_import_pie = get_eurostat_data("oil", "import", region, 12)
+        sff_imports, sff_import_pie = get_eurostat_data("sff", "import", region, 7)
 
-# Import
-if "Import" in balance:
-    # with st.expander("Import", expanded=True):
-    st.markdown("## Import")
-    ng_imports, ng_import_pie = get_eurostat_data("ng", "import", region, 7)
-    lng_imports, lng_import_pie = get_eurostat_data("lng", "import", region, 7)
-    oil_imports, oil_import_pie = get_eurostat_data("oil", "import", region, 12)
-    sff_imports, sff_import_pie = get_eurostat_data("sff", "import", region, 7)
+        cols = st.columns(4)
+        eurostat_plots("Natural gas", "import", ng_imports, ng_import_pie, cols[0])
+        eurostat_plots("LNG", "import", lng_imports, lng_import_pie, cols[1])
+        eurostat_plots("Solid fuels", "import", sff_imports, sff_import_pie, cols[2])
+        eurostat_plots("Crude oil", "import", oil_imports, oil_import_pie, cols[3])
+        st.caption("Source: Eurostat, 2022")
 
-    cols = st.columns(4)
-    eurostat_plots("Natural gas", "import", ng_imports, ng_import_pie, cols[0])
-    eurostat_plots("LNG", "import", lng_imports, lng_import_pie, cols[1])
-    eurostat_plots("Solid fuels", "import", sff_imports, sff_import_pie, cols[2])
-    eurostat_plots("Crude oil", "import", oil_imports, oil_import_pie, cols[3])
-    st.caption("Source: Eurostat, 2022")
+    # Production
+    if "Production" in balance:
+        # with st.expander("Production", expanded=True):
+        st.markdown("## Production")
+        ng_production, ng_production_pie = get_eurostat_data(
+            "ng", "production", region, 7
+        )
+        lng_production, lng_production_pie = get_eurostat_data(
+            "lng", "production", region, 7
+        )
+        oil_production, oil_production_pie = get_eurostat_data(
+            "oil", "production", region, 7
+        )
+        sff_production, sff_production_pie = get_eurostat_data(
+            "sff", "production", region, 7
+        )
 
-# Production
-if "Production" in balance:
-    # with st.expander("Production", expanded=True):
-    st.markdown("## Production")
-    ng_production, ng_production_pie = get_eurostat_data("ng", "production", region, 7)
-    lng_production, lng_production_pie = get_eurostat_data(
-        "lng", "production", region, 7
-    )
-    oil_production, oil_production_pie = get_eurostat_data(
-        "oil", "production", region, 7
-    )
-    sff_production, sff_production_pie = get_eurostat_data(
-        "sff", "production", region, 7
-    )
+        cols = st.columns(4)
+        eurostat_plots(
+            "Natural gas", "production", ng_production, ng_production_pie, cols[0]
+        )
+        eurostat_plots("LNG", "production", lng_production, lng_production_pie, cols[1])
+        eurostat_plots(
+            "Solid fuels", "production", sff_production, sff_production_pie, cols[2]
+        )
+        eurostat_plots(
+            "Crude oil", "production", oil_production, oil_production_pie, cols[3]
+        )
 
-    cols = st.columns(4)
-    eurostat_plots(
-        "Natural gas", "production", ng_production, ng_production_pie, cols[0]
-    )
-    eurostat_plots("LNG", "production", lng_production, lng_production_pie, cols[1])
-    eurostat_plots(
-        "Solid fuels", "production", sff_production, sff_production_pie, cols[2]
-    )
-    eurostat_plots(
-        "Crude oil", "production", oil_production, oil_production_pie, cols[3]
-    )
+    # Export
+    if "Export" in balance:
+        # with st.expander("Export", expanded=False):
+        st.markdown("## Export")
+        ng_exports, ng_export_pie = get_eurostat_data("ng", "export", region, 7)
+        lng_exports, lng_export_pie = get_eurostat_data("lng", "export", region, 7)
+        oil_exports, oil_export_pie = get_eurostat_data("oil", "export", region, 7)
+        sff_exports, sff_export_pie = get_eurostat_data("sff", "export", region, 7)
 
-# Export
-if "Export" in balance:
-    # with st.expander("Export", expanded=False):
-    st.markdown("## Export")
-    ng_exports, ng_export_pie = get_eurostat_data("ng", "export", region, 7)
-    lng_exports, lng_export_pie = get_eurostat_data("lng", "export", region, 7)
-    oil_exports, oil_export_pie = get_eurostat_data("oil", "export", region, 7)
-    sff_exports, sff_export_pie = get_eurostat_data("sff", "export", region, 7)
-
-    cols = st.columns(4)
-    eurostat_plots("Natural gas", "export", ng_exports, ng_export_pie, cols[0])
-    eurostat_plots("LNG", "export", lng_exports, lng_export_pie, cols[1])
-    eurostat_plots("Solid fuels", "export", sff_exports, sff_export_pie, cols[2])
-    eurostat_plots("Crude oil", "export", oil_exports, oil_export_pie, cols[3])
+        cols = st.columns(4)
+        eurostat_plots("Natural gas", "export", ng_exports, ng_export_pie, cols[0])
+        eurostat_plots("LNG", "export", lng_exports, lng_export_pie, cols[1])
+        eurostat_plots("Solid fuels", "export", sff_exports, sff_export_pie, cols[2])
+        eurostat_plots("Crude oil", "export", oil_exports, oil_export_pie, cols[3])
 
 
 # Pipeline Flow
@@ -222,13 +227,11 @@ st.markdown(
 fig = go.Figure()
 date = pl_import.columns
 for _, row in pl_import.iterrows():
+    country = row.name[-3:-1]
+    marker_dict = dict(color=get_countryColor(country, FZJcolor))
     fig.add_trace(
         go.Scatter(
-            x=date,
-            y=row.values,
-            stackgroup="one",
-            name=row.name,
-            # marker=marker_dict,
+            x=date, y=row.values, stackgroup="one", name=row.name, marker=marker_dict,
         )
     )
 
@@ -245,187 +248,6 @@ fig.update_layout(hovermode="x unified")
 
 st.plotly_chart(fig, use_container_width=True)
 st.caption("Source: ENTSOG, 2022")
-
-
-# fig = go.Figure()
-# # fig.add_trace(go.Scatter(x=xval, y=opal_df["value"],stackgroup='one', name = f"OPAL (Nord Stream 1, Ø {annual_mean(opal_df['value'], 10**3)} TWh/a)",  marker=dict(color= FZJcolor.get("blue2"))))
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_opal["value"],
-#         stackgroup="one",
-#         name="OPAL (DE)",
-#         marker=dict(color=FZJcolor.get("blue2")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_nel["value"],
-#         stackgroup="one",
-#         name=f"NEL (DE)",
-#         marker=dict(color=FZJcolor.get("blue2")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_kondratki["value"],
-#         stackgroup="one",
-#         name=f"Kondratki (PL)",
-#         marker=dict(color=FZJcolor.get("green")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_wysokoje["value"],
-#         stackgroup="one",
-#         name=f"Wysokoje (PL)",
-#         marker=dict(color=FZJcolor.get("green")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_drozdovichi["value"],
-#         stackgroup="one",
-#         name=f"Drozdovichi (PL)",
-#         marker=dict(color=FZJcolor.get("green")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_isaccea1["value"],
-#         stackgroup="one",
-#         name=f"Isaccea I (RO)",
-#         marker=dict(color=FZJcolor.get("orange")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_isaccea2["value"],
-#         stackgroup="one",
-#         name=f"Isaccea II (RO)",
-#         marker=dict(color=FZJcolor.get("orange")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_isaccea3["value"],
-#         stackgroup="one",
-#         name=f"Isaccea III (RO)",
-#         marker=dict(color=FZJcolor.get("orange")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_isaccea0["value"],
-#         stackgroup="one",
-#         name=f"Isaccea (RO)",
-#         marker=dict(color=FZJcolor.get("orange")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_mediesu["value"],
-#         stackgroup="one",
-#         name=f"Mediesu Aurit (RO)",
-#         marker=dict(color=FZJcolor.get("orange")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_kotlovka["value"],
-#         stackgroup="one",
-#         name=f"Kotlovka (LT)",
-#         marker=dict(color=FZJcolor.get("yellow")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_narva["value"],
-#         stackgroup="one",
-#         name=f"Narva (EE)",
-#         marker=dict(color=FZJcolor.get("lblue")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_varska["value"],
-#         stackgroup="one",
-#         name=f"Värska (EE)",
-#         marker=dict(color=FZJcolor.get("lblue")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_standzha["value"],
-#         stackgroup="one",
-#         name=f"Strandzha (BG)",
-#         marker=dict(color=FZJcolor.get("pink")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_berge["value"],
-#         stackgroup="one",
-#         name=f"VIP Bereg (BG)",
-#         marker=dict(color=FZJcolor.get("pink")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_kipoi["value"],
-#         stackgroup="one",
-#         name=f"Kipoi (GR)",
-#         marker=dict(color=FZJcolor.get("grey3")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_imatra["value"],
-#         stackgroup="one",
-#         name=f"Imatra (FI)",
-#         marker=dict(color=FZJcolor.get("yellow")),
-#     )
-# )
-# fig.add_trace(
-#     go.Scatter(
-#         x=xval,
-#         y=pl_velke["value"],
-#         stackgroup="one",
-#         name=f"Velke Kapusany (SK)",
-#         marker=dict(color=FZJcolor.get("blue")),
-#     )
-# )
-
-
-# fig.update_layout(
-#     title="Pipeline flow from Russia to EU",
-#     yaxis_title="NG [GWh/d]",
-#     yaxis=dict(range=[0, 7000]),
-#     font=font_dict,
-#     legend=legend_dict,
-#     barmode="stack",
-# )
-# fig.update_layout(hovermode="x unified")
-
-
-# st.plotly_chart(fig, use_container_width=True)
-# st.caption("Source: ENTSOG, 2022")
 
 
 st.markdown("## Storages")
@@ -638,7 +460,6 @@ fig.add_trace(
         marker=dict(color=FZJcolor.get("orange")),
     )
 )
-
 
 fig.update_layout(
     title="Withdrawal of NG",
