@@ -449,7 +449,7 @@ fig = go.Figure()
 fig.add_trace(
     go.Line(
         x=xval,
-        y=lng_df["dtmi_median"],
+        y=lng_df["dtmi"],  # dtmi_median
         name="Max capacity",
         marker=dict(color=FZJcolor.get("black3")),
     )
@@ -562,7 +562,7 @@ xval_gng = lng_df["gasDayStartedOn"]
 fig.add_trace(
     go.Line(
         x=xval,
-        y=gng_df["workingGasVolume_median"],
+        y=gng_df["workingGasVolume"],  # workingGasVolume_median
         name="Max capacity",
         marker=dict(color=FZJcolor.get("black")),
     )
@@ -625,7 +625,7 @@ fig = go.Figure()
 fig.add_trace(
     go.Line(
         x=xval,
-        y=gng_df["withdrawalCapacity_median"],
+        y=gng_df["withdrawalCapacity"],  # withdrawalCapacity_median
         name=f"Max withdrawl (Ø {int(gng_df['withdrawalCapacity_median'].mean()*365/10**3)} TWh/a)",
         marker=dict(color=FZJcolor.get("black")),
     )
@@ -643,7 +643,7 @@ fig.add_trace(
 fig.update_layout(
     title="Withdrawal of NG",
     yaxis_title="NG [GWh/d]",
-    yaxis=dict(range=[0, 20000]),
+    yaxis=dict(range=[0, 22000]),
     font=font_dict,
     legend=legend_dict,
 )
