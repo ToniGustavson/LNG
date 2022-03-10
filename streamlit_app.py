@@ -138,16 +138,18 @@ pl_reduction = cols[0].slider(
 lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
 
 cols[0].markdown("### Supply and demand")
-try:
-    cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
-except:
-    cols[0].markdown("No image available")
+cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+# try:
+#     cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+# except:
+#     cols[0].markdown("No image available")
 
 cols[1].markdown("### Storage")
-try:
-    cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
-except:
-    cols[0].markdown("No image available")
+cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+# try:
+#     cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+# except:
+#     cols[0].markdown("No image available")
 
 
 st.text("")
