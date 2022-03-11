@@ -165,7 +165,7 @@ region_list = get_eu27()
 region_list = ["EU27"] + region_list
 region = cols[0].selectbox("Region", region_list, 0)
 balance = cols[1].multiselect("Balance", ["Import", "Production", "Export"], ["Import"])
-with st.spinner(text="Connecting to Eurostat Database..."):
+with st.spinner(text="Connecting to Eurostat database..."):
     # Import
     if "Import" in balance:
         # with st.expander("Import", expanded=True):

@@ -55,8 +55,6 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     else:
         regions = [region]
 
-    # eu27 = get_eu27()
-    # region_dict = {"EU": eu27, "DE": de}
     fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"
     fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.csv"
 
@@ -79,13 +77,19 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         df = eurostat.get_data_df(table_name)
         df.rename({"geo\\time": "geo"}, inplace=True, axis=1)
 
-        # regions = region_dict.get(region)
         df = df[df.geo.isin(regions)]
 
-        if commodity == "ng":
-            df = df[df.siec.isin(["G3000"]) & df.unit.isin(["TJ_GCV"])]
-        elif commodity == "lng":
-            df = df[df.siec.isin(["G3200"]) & df.unit.isin(["TJ_GCV"])]
+        siec_dict = {
+            "ng": "G3000",
+            "lng": "G3200",
+            "oil": "O4000",
+            "sff": "C0000X0350-0370",
+        }
+        siec = siec_dict.get(commodity)
+        df = df[df.siec.isin([siec])]
+
+        if commodity == "ng" or commodity == "lng":
+            df = df[df.unit.isin(["TJ_GCV"])]
 
         if mode in set(["import", "export"]):
             df = df[~df.partner.isin(regions)]
@@ -110,7 +114,9 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         df_nlargest = df_grouped.nlargest(nlargest, year)
         sum_nlargest = df_nlargest.sum(axis=0)
 
-        df_nlargest.loc["Other", :] = total_all - sum_nlargest
+        other_nlargest = total_all - sum_nlargest
+        if sum(other_nlargest) > 0:
+            df_nlargest.loc["Other", :] = total_all - sum_nlargest
         df_nlargest = df_nlargest.sort_index(axis=1)
 
         # Change unit
