@@ -148,14 +148,19 @@ st.markdown(
 
 cols = st.columns(2)
 
-pl_reduction = cols[0].slider(
-    "Reduktion Russischer Gas-Importe [%]",
-    min_value=0,
-    max_value=100,
-    value=100,
-    step=10,
-)
+# cols[0].markdown("Reduktion Russischer Gas-Importe: 100 %")
+pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
+
+# pl_reduction = 100
+# pl_reduction = cols[0].slider(
+#     "Reduktion Russischer Gas-Importe [%]",
+#     min_value=0,
+#     max_value=100,
+#     value=100,
+#     step=10,
+# )
 lng_capacity = cols[1].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 5.6])
+lng_capacity = 5.6
 
 df = get_optiRes(pl_reduction, lng_capacity)
 
@@ -351,7 +356,7 @@ fig.add_trace(
         x=xvals,
         y=storage_charge_pl,
         stackgroup="one",
-        name="Speichernung (Pipeline)",
+        name="Speicherung (Pipeline)",
         mode="none",
         fillcolor=FZJcolor.get("yellow")
         # marker=marker_dict,
@@ -363,7 +368,7 @@ fig.add_trace(
         x=xvals,
         y=storage_charge_lng,
         stackgroup="one",
-        name="Speichernung (LNG)",
+        name="Speicherung (LNG)",
         mode="none",
         fillcolor=FZJcolor.get("blue3")
         # marker=marker_dict,
