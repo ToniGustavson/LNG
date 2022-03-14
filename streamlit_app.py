@@ -146,7 +146,7 @@ st.markdown(
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
 )
 
-cols = st.columns(2)
+cols = st.columns(3)
 
 # cols[0].markdown("Reduktion Russischer Gas-Importe: 100 %")
 pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
@@ -159,11 +159,15 @@ pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
 #     value=100,
 #     step=10,
 # )
-lng_capacity = cols[1].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 5.6])
 
-df = get_optiRes(pl_reduction, lng_capacity)
+reduced_demand = cols[1].selectbox("Nachfrageredutkion", ["False", "True"])
+
+lng_capacity = cols[2].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 5.6])
 
 
+df = get_optiRes(pl_reduction, lng_capacity, reduced_demand)
+
+cols = st.columns(2)
 # cols[0].markdown("### Supply and demand")
 # Demand
 total_demand = df.dom_Dem + df.elec_Dem + df.ind_Dem + df.ghd_Dem
@@ -182,17 +186,7 @@ xvals = df.time
 #     )
 # )
 
-fig.add_trace(
-    go.Scatter(
-        x=xvals,
-        y=total_demand,
-        stackgroup="two",
-        name="Ungedeckter Bedarf",
-        mode="none",
-        fillcolor=FZJcolor.get("red"),
-        # marker=marker_dict,
-    )
-)
+
 
 fig.add_trace(
     go.Scatter(
@@ -241,6 +235,19 @@ fig.add_trace(
         # marker=marker_dict,
     )
 )
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=total_demand-total_demand_served,
+        stackgroup="one",
+        name="Ungedeckter Bedarf",
+        mode="none",
+        fillcolor=FZJcolor.get("red"),
+        # marker=marker_dict,
+    )
+)
+
 fig.update_layout(
     title=f"Gedeckte Erdgasbedarfe [TWh/h]", font=dict(size=16),
 )

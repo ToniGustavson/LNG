@@ -49,8 +49,8 @@ def get_optiImage(mode, pl_reduction, lng_capacity):
     return image
 
 
-def get_optiRes(pl_reduction, lng_capacity):
-    fileName = f"GasSocScen{pl_reduction}_{int(lng_capacity*10)}.xlsx"
+def get_optiRes(pl_reduction, lng_capacity, reduced_demand):
+    fileName = f"GasSocScen{pl_reduction}_{int(lng_capacity*10)}_{reduced_demand}.xlsx"
     fileDir = f"Input/Optimization/{fileName}"
     df = pd.read_excel(fileDir, index_col=0)
     df.fillna(0, inplace=True)
