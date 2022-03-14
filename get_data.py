@@ -91,7 +91,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         siec_dict = {
             "ng": "G3000",
             "lng": "G3200",
-            "oil": "O4000",
+            "oil": "O4100_TOT",
             "sff": "C0000X0350-0370",
         }
         siec = siec_dict.get(commodity)
