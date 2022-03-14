@@ -152,7 +152,7 @@ pl_reduction = cols[0].slider(
     "Reduction of Russian gas imports [%]",
     min_value=0,
     max_value=100,
-    value=50,
+    value=100,
     step=10,
 )
 lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
