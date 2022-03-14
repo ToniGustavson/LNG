@@ -165,7 +165,7 @@ df = get_optiRes(pl_reduction, lng_capacity)
 total_demand = df.dom_Dem + df.elec_Dem + df.ind_Dem + df.ghd_Dem
 total_demand_served = df.dom_served + df.elec_served + df.ind_served + df.ghd_served
 fig = go.Figure()
-xvals = df.index
+xvals = df.time
 
 # fig.add_trace(
 #     go.Line(
@@ -245,7 +245,6 @@ cols[0].plotly_chart(fig, use_container_width=True)
 #%%
 # Pipeline Import
 fig = go.Figure()
-xvals = df.index
 
 fig.add_trace(
     go.Scatter(
@@ -279,7 +278,6 @@ cols[0].plotly_chart(fig, use_container_width=True)
 #%%
 # SOC
 fig = go.Figure()
-xvals = df.index
 
 fig.add_trace(
     go.Scatter(
@@ -323,7 +321,6 @@ storage_charge_pl = [max(0, x) for x in storage_operation_pl]
 storage_charge_lng = [max(0, x) for x in storage_operation_lng]
 
 fig = go.Figure()
-xvals = df.index
 
 # fig.add_trace(
 #     go.Line(
