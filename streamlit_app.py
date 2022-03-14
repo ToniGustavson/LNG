@@ -318,12 +318,16 @@ cols[1].plotly_chart(fig, use_container_width=True)
 #%%
 # Storage Charge and discharge
 storage_operation = df.lngServed + df.pipeServed - total_demand_served
-storage_operation_pl = df.pipeServed - total_demand_served
-storage_operation_lng = storage_operation - storage_operation_pl
-
 storage_discharge = [min(0, x) for x in storage_operation]
-storage_charge_pl = [max(0, x) for x in storage_operation_pl]
-storage_charge_lng = [max(0, x) for x in storage_operation_lng]
+storage_charge = np.array([max(0, x) for x in storage_operation])
+
+storage_operation_pl = df.pipeServed - total_demand_served
+storage_charge_pl = np.array([max(0, x) for x in storage_operation_pl])
+
+storage_operation_lng = storage_charge - storage_charge_pl
+# storage_operation_lng = df.pipeServed - total_demand_served
+storage_charge_lng = np.array([max(0, x) for x in storage_operation_lng])
+
 
 fig = go.Figure()
 
@@ -343,7 +347,7 @@ fig.add_trace(
     go.Scatter(
         x=xvals,
         y=storage_discharge,
-        stackgroup="one",
+        stackgroup="two",
         name="Ausspeicherung",
         mode="none",
         fillcolor=FZJcolor.get("red")
