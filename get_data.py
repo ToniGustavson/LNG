@@ -71,7 +71,6 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         df_nlargest = pd.read_csv(fileDir_all, index_col=0)
         df_nlargest = df_nlargest.sort_index(axis=1)
         df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
-        pass
     else:
         mode_dict = {"import": "ti", "export": "te", "production": "cb"}
         mode_table = mode_dict.get(mode)
