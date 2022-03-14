@@ -149,13 +149,13 @@ st.markdown(
 cols = st.columns(2)
 
 pl_reduction = cols[0].slider(
-    "Reduction of Russian gas imports [%]",
+    "Reduktion Russischer Gas-Importe [%]",
     min_value=0,
     max_value=100,
     value=100,
     step=10,
 )
-lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
+lng_capacity = cols[1].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 5.6])
 
 df = get_optiRes(pl_reduction, lng_capacity)
 
