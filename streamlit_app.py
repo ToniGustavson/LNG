@@ -52,7 +52,7 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
     translation_dict = {
         "Natural gas": "Erdgas",
         "Solid fuels": "Feste Brennstoffe",
-        "Crude oil": "Rohöl",
+        "Crude oil": "Mineralöl",
     }
     trans_mode_dict = {
         "import": "Import",  # "",  # "Import",
@@ -187,7 +187,6 @@ xvals = df.time
 # )
 
 
-
 fig.add_trace(
     go.Scatter(
         x=xvals,
@@ -239,7 +238,7 @@ fig.add_trace(
 fig.add_trace(
     go.Scatter(
         x=xvals,
-        y=total_demand-total_demand_served,
+        y=total_demand - total_demand_served,
         stackgroup="one",
         name="Ungedeckter Bedarf",
         mode="none",
