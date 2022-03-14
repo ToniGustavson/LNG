@@ -1,13 +1,17 @@
 #%%
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 import numpy as np
-import plotly.express as px
+
+# import plotly.express as px
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
+
+# import plotly.figure_factory as ff
 from get_data import *
-from PIL import Image
+
+# from PIL import Image
 
 #%%
 # Get Data
@@ -38,13 +42,24 @@ def get_color(key, default_col="blue"):
     return {"RU": FZJcolor.get(default_col)}.get(key, FZJcolor.get("grey1"))
 
 
-def eurostat_plots(commodity, mode, df_all, df_single, streamlit_obj):
+def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
     unit_dict = {
         "Natural gas": "TWh",
         "LNG": "TWh",
         "Solid fuels": "kt",
         "Crude oil": "kt",
     }
+    translation_dict = {
+        "Natural gas": "Erdgas",
+        "Solid fuels": "Feste Brennstoffe",
+        "Crude oil": "Rohöl",
+    }
+    trans_mode_dict = {
+        "import": "Import",  # "",  # "Import",
+        "export": "Export",  # "",  # "Export",
+        "production": "Produktion",  # "",  # "Produktion"
+    }
+
     unit = unit_dict.get(commodity)
     fig = go.Figure()
     years = df_all.columns
@@ -64,10 +79,13 @@ def eurostat_plots(commodity, mode, df_all, df_single, streamlit_obj):
             )
         )
     fig.update_layout(
-        title=f"{commodity} {mode} [{unit}]", font=dict(size=16),
+        title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} [{unit}]",
+        font=dict(size=16),
     )
 
     streamlit_obj.plotly_chart(fig, use_container_width=True)
+    scale = 3
+    # fig.write_image(f"Output/{region}_{commodity}_{mode}_{unit}.png", scale=scale)
     # streamlit_obj.caption("Source: Eurostat, 2022")
 
     # Pie Chart
@@ -88,9 +106,11 @@ def eurostat_plots(commodity, mode, df_all, df_single, streamlit_obj):
             )
         )
         fig.update_layout(
-            title=f"{commodity} {mode} 2020 [%]", font=dict(size=16),
+            title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} 2020 [%]",
+            font=dict(size=16),
         )
         streamlit_obj.plotly_chart(fig, use_container_width=True)  #
+        # fig.write_image(f"Output/{region}_{commodity}_{mode}_2020.png", scale=scale)
         # streamlit_obj.caption("Source: Eurostat, 2022")
     except:
         streamlit_obj.markdown("No data  available")
@@ -132,20 +152,244 @@ pl_reduction = cols[0].slider(
     "Reduction of Russian gas imports [%]",
     min_value=0,
     max_value=100,
-    value=90,
+    value=50,
     step=10,
 )
 lng_capacity = cols[1].selectbox("LNG import capacity [TW]", [2.4, 5.6])
 
-cols[0].markdown("### Supply and demand")
-cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
+df = get_optiRes(pl_reduction, lng_capacity)
+
+
+# cols[0].markdown("### Supply and demand")
+# Demand
+total_demand = df.dom_Dem + df.elec_Dem + df.ind_Dem + df.ghd_Dem
+total_demand_served = df.dom_served + df.elec_served + df.ind_served + df.ghd_served
+fig = go.Figure()
+xvals = df.index
+
+# fig.add_trace(
+#     go.Line(
+#         x=xvals,
+#         y=total_demand,
+#         name="Demand",
+#         # mode="none",
+#         line=dict(width=0.1, color=FZJcolor.get("black")),
+#         # marker=marker_dict,
+#     )
+# )
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=total_demand,
+        stackgroup="two",
+        name="Ungedeckter Bedarf",
+        mode="none",
+        fillcolor=FZJcolor.get("red"),
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.ind_served,
+        stackgroup="one",
+        name="Industrie",
+        mode="none",
+        fillcolor=FZJcolor.get("orange"),
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.elec_served,
+        stackgroup="one",
+        name="Energie",
+        mode="none",
+        fillcolor=FZJcolor.get("blue")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.dom_served,
+        stackgroup="one",
+        name="Haushalte",
+        mode="none",
+        fillcolor=FZJcolor.get("green")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.ghd_served,
+        stackgroup="one",
+        name="GHD",
+        mode="none",
+        fillcolor=FZJcolor.get("lblue")
+        # marker=marker_dict,
+    )
+)
+fig.update_layout(
+    title=f"Gedeckte Erdgasbedarfe [TWh/h]", font=dict(size=16),
+)
+cols[0].plotly_chart(fig, use_container_width=True)
+
+#%%
+# Pipeline Import
+fig = go.Figure()
+xvals = df.index
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.pipeServed,
+        stackgroup="one",
+        name="Pipeline Import",
+        mode="none",
+        fillcolor=FZJcolor.get("yellow")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.lngServed,  # lng_val / 24,
+        stackgroup="one",
+        name="LNG Import",
+        mode="none",
+        fillcolor=FZJcolor.get("blue3")
+        # marker=marker_dict,
+    )
+)
+
+fig.update_layout(
+    title=f"Erdgasimporte [TWh/h]", font=dict(size=16),
+)
+cols[0].plotly_chart(fig, use_container_width=True)
+
+#%%
+# SOC
+fig = go.Figure()
+xvals = df.index
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.soc,
+        stackgroup="one",
+        name="Füllstand",
+        mode="none",
+        fillcolor=FZJcolor.get("orange")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Line(
+        x=xvals,
+        y=np.ones(len(xvals)) * 1100,
+        # stackgroup="one",
+        name="Maximale Kapazität",
+        # mode="none",
+        line_color=FZJcolor.get("black")
+        # marker=marker_dict,
+    )
+)
+
+fig.update_layout(
+    title=f"Speicherfüllstand [TWh]", font=dict(size=16),
+)
+
+cols[1].plotly_chart(fig, use_container_width=True)
+
+
+#%%
+# Storage Charge and discharge
+storage_operation = df.lngServed + df.pipeServed - total_demand_served
+storage_operation_pl = df.pipeServed - total_demand_served
+storage_operation_lng = storage_operation - storage_operation_pl
+
+storage_discharge = [min(0, x) for x in storage_operation]
+storage_charge_pl = [max(0, x) for x in storage_operation_pl]
+storage_charge_lng = [max(0, x) for x in storage_operation_lng]
+
+fig = go.Figure()
+xvals = df.index
+
+# fig.add_trace(
+#     go.Line(
+#         x=xvals,
+#         y=df.lngServed + df.pipeServed - total_demand_served,
+#         # stackgroup="one",
+#         name="soc",
+#         # mode="none",
+#         # fillcolor=FZJcolor.get("orange")
+#         # marker=marker_dict,
+#     )
+# )
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=storage_discharge,
+        stackgroup="one",
+        name="Ausspeicherung",
+        mode="none",
+        fillcolor=FZJcolor.get("red")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=storage_charge_pl,
+        stackgroup="one",
+        name="Speichernung (Pipeline)",
+        mode="none",
+        fillcolor=FZJcolor.get("yellow")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=storage_charge_lng,
+        stackgroup="one",
+        name="Speichernung (LNG)",
+        mode="none",
+        fillcolor=FZJcolor.get("blue3")
+        # marker=marker_dict,
+    )
+)
+
+fig.update_layout(
+    title=f"Ein- und Ausspeicherung Gasspeicher [TWh/h]", font=dict(size=16),
+)
+
+cols[1].plotly_chart(fig, use_container_width=True)
+
+
+# Image Flow
+# cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
 # try:
 #     cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
 # except:
 #     cols[0].markdown("No image available")
 
-cols[1].markdown("### Storage")
-cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
+# Image SOC
+# cols[1].markdown("### Storage")
+# cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
 # try:
 #     cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
 # except:
@@ -176,10 +420,16 @@ with st.spinner(text="Connecting to Eurostat database..."):
         sff_imports, sff_import_pie = get_eurostat_data("sff", "import", region, 7)
 
         cols = st.columns(4)
-        eurostat_plots("Natural gas", "import", ng_imports, ng_import_pie, cols[0])
-        eurostat_plots("LNG", "import", lng_imports, lng_import_pie, cols[1])
-        eurostat_plots("Solid fuels", "import", sff_imports, sff_import_pie, cols[2])
-        eurostat_plots("Crude oil", "import", oil_imports, oil_import_pie, cols[3])
+        eurostat_plots(
+            "Natural gas", "import", ng_imports, region, ng_import_pie, cols[0]
+        )
+        eurostat_plots("LNG", "import", lng_imports, region, lng_import_pie, cols[1])
+        eurostat_plots(
+            "Solid fuels", "import", sff_imports, region, sff_import_pie, cols[2]
+        )
+        eurostat_plots(
+            "Crude oil", "import", oil_imports, region, oil_import_pie, cols[3]
+        )
         st.caption("Source: Eurostat, 2022")
 
     # Production
@@ -201,14 +451,31 @@ with st.spinner(text="Connecting to Eurostat database..."):
 
         cols = st.columns(4)
         eurostat_plots(
-            "Natural gas", "production", ng_production, ng_production_pie, cols[0]
+            "Natural gas",
+            "production",
+            ng_production,
+            region,
+            ng_production_pie,
+            cols[0],
         )
-        eurostat_plots("LNG", "production", lng_production, lng_production_pie, cols[1])
         eurostat_plots(
-            "Solid fuels", "production", sff_production, sff_production_pie, cols[2]
+            "LNG", "production", lng_production, region, lng_production_pie, cols[1]
         )
         eurostat_plots(
-            "Crude oil", "production", oil_production, oil_production_pie, cols[3]
+            "Solid fuels",
+            "production",
+            sff_production,
+            region,
+            sff_production_pie,
+            cols[2],
+        )
+        eurostat_plots(
+            "Crude oil",
+            "production",
+            oil_production,
+            region,
+            oil_production_pie,
+            cols[3],
         )
 
     # Export
@@ -221,10 +488,16 @@ with st.spinner(text="Connecting to Eurostat database..."):
         sff_exports, sff_export_pie = get_eurostat_data("sff", "export", region, 7)
 
         cols = st.columns(4)
-        eurostat_plots("Natural gas", "export", ng_exports, ng_export_pie, cols[0])
-        eurostat_plots("LNG", "export", lng_exports, lng_export_pie, cols[1])
-        eurostat_plots("Solid fuels", "export", sff_exports, sff_export_pie, cols[2])
-        eurostat_plots("Crude oil", "export", oil_exports, oil_export_pie, cols[3])
+        eurostat_plots(
+            "Natural gas", "export", ng_exports, region, ng_export_pie, cols[0]
+        )
+        eurostat_plots("LNG", "export", lng_exports, region, lng_export_pie, cols[1])
+        eurostat_plots(
+            "Solid fuels", "export", sff_exports, region, sff_export_pie, cols[2]
+        )
+        eurostat_plots(
+            "Crude oil", "export", oil_exports, region, oil_export_pie, cols[3]
+        )
 
 
 # Pipeline Flow

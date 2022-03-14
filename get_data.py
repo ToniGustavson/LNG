@@ -49,6 +49,14 @@ def get_optiImage(mode, pl_reduction, lng_capacity):
     return image
 
 
+def get_optiRes(pl_reduction, lng_capacity):
+    fileName = f"GasSocScen{pl_reduction}_{int(lng_capacity*10)}.xlsx"
+    fileDir = f"Input/Optimization/{fileName}"
+    df = pd.read_excel(fileDir)
+    df.fillna(0, inplace=True)
+    return df
+
+
 def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     if region == "EU27":
         regions = get_eu27()
