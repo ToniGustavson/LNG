@@ -175,7 +175,7 @@ st.markdown(
 cols = st.columns(4)
 
 # cols[0].markdown("Reduktion Russischer Gas-Importe: 100 %")
-pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
+pl_reduction = cols[0].selectbox("Anteil russischer Gas-Importe [%]", [0])
 
 # pl_reduction = 100
 # pl_reduction = cols[0].slider(
@@ -197,8 +197,10 @@ df = get_optiRes(pl_reduction, lng_capacity, reduced_demand, soc_slack)
 cols = st.columns(2)
 # cols[0].markdown("### Supply and demand")
 # Demand
-total_demand = df.dom_Dem + df.elec_Dem + df.ind_Dem + df.ghd_Dem
-total_demand_served = df.dom_served + df.elec_served + df.ind_served + df.ghd_served
+total_demand = df.dom_Dem + df.elec_Dem + df.ind_Dem + df.ghd_Dem + df.exp_n_oth
+total_demand_served = (
+    df.dom_served + df.elec_served + df.ind_served + df.ghd_served + df.exp_n_oth_served
+)
 fig = go.Figure()
 xvals = df.time
 
@@ -213,33 +215,6 @@ xvals = df.time
 #     )
 # )
 
-
-fig.add_trace(
-    go.Scatter(
-        x=xvals,
-        y=df.ind_served,
-        stackgroup="one",
-        # legendgroup="bedarf",
-        # legendgrouptitle_text="Erdgasbedarfe",
-        name="Industrie",
-        mode="none",
-        fillcolor=FZJcolor.get("orange"),
-        # marker=marker_dict,
-    )
-)
-
-fig.add_trace(
-    go.Scatter(
-        x=xvals,
-        y=df.elec_served,
-        stackgroup="one",
-        # legendgroup="bedarf",
-        name="Energie",
-        mode="none",
-        fillcolor=FZJcolor.get("blue")
-        # marker=marker_dict,
-    )
-)
 
 fig.add_trace(
     go.Scatter(
@@ -262,13 +237,53 @@ fig.add_trace(
         # legendgroup="bedarf",
         name="GHD",
         mode="none",
-        fillcolor=FZJcolor.get("lblue")
+        fillcolor=FZJcolor.get("purple")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.elec_served,
+        stackgroup="one",
+        # legendgroup="bedarf",
+        name="Energie",
+        mode="none",
+        fillcolor=FZJcolor.get("blue")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.ind_served,
+        stackgroup="one",
+        # legendgroup="bedarf",
+        # legendgrouptitle_text="Erdgasbedarfe",
+        name="Industrie",
+        mode="none",
+        fillcolor=FZJcolor.get("lblue"),
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.exp_n_oth_served,
+        stackgroup="one",
+        # legendgroup="bedarf",
+        name="Export und sonstige",
+        mode="none",
+        fillcolor=FZJcolor.get("blue2")
         # marker=marker_dict,
     )
 )
 
 unserved_demand = total_demand - total_demand_served
-# st.text(sum(unserved_demand))
+st.markdown(f"Abgeregelte Menge Erdgas: {int(sum(unserved_demand))} TWh")
 
 if sum(unserved_demand) > 0.001:
     fig.add_trace(
@@ -293,7 +308,7 @@ fig.add_trace(
         # legendgrouptitle_text="Erdgasimport",
         name="Pipeline Import",
         fillcolor="rgba(0, 0, 0, 0)",
-        line_color=FZJcolor.get("blue3"),
+        line_color=FZJcolor.get("orange"),
     )
 )
 
