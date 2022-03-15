@@ -67,11 +67,11 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"
     fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.csv"
 
-    # if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
-    #     df_nlargest = pd.read_csv(fileDir_all, index_col=0)
-    #     df_nlargest = df_nlargest.sort_index(axis=1)
-    #     df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
-    if True:  # else:
+    if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
+        df_nlargest = pd.read_csv(fileDir_all, index_col=0)
+        df_nlargest = df_nlargest.sort_index(axis=1)
+        df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
+    else:  # if True:  #
         mode_dict = {"import": "ti", "export": "te", "production": "cb"}
         mode_table = mode_dict.get(mode)
         table_dict = {
@@ -93,7 +93,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
             "lng": "G3200",
             "oilCrude": "O4100_TOT",
             "oilProducts": "O4600",
-            "sff": "C0100", # Steinkohle: "C0100" Ges: "C0000X0350-0370"
+            "sff": "C0100",  # Steinkohle: "C0100" Ges: "C0000X0350-0370"
         }
         siec = siec_dict.get(commodity)
         df = df[df.siec.isin([siec])]
