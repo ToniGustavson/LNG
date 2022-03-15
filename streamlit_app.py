@@ -603,14 +603,17 @@ with st.spinner(text="Connecting to Eurostat database..."):
         lng_exports, lng_export_pie = get_eurostat_data(
             "lng", "export", region, 7, year=year
         )
-        oil_exports, oil_export_pie = get_eurostat_data(
-            "oil", "export", region, 7, year=year
+        oilCrude_exports, oilCrude_exports_pie = get_eurostat_data(
+            "oilCrude", "export", region, 7, year=year
+        )
+        oilProducts_exports, oilProducts_exports_pie = get_eurostat_data(
+            "oilProducts", "export", region, 7, year=year
         )
         sff_exports, sff_export_pie = get_eurostat_data(
             "sff", "export", region, 7, year=year
         )
 
-        cols = st.columns(4)
+        cols = st.columns(5)
         eurostat_plots(
             "Natural gas", "export", ng_exports, region, ng_export_pie, cols[0]
         )
@@ -619,7 +622,21 @@ with st.spinner(text="Connecting to Eurostat database..."):
             "Solid fuels", "export", sff_exports, region, sff_export_pie, cols[2]
         )
         eurostat_plots(
-            "Crude oil", "export", oil_exports, region, oil_export_pie, cols[3]
+            "Crude oil",
+            "export",
+            oilCrude_exports,
+            region,
+            oilCrude_exports_pie,
+            cols[3],
+        )
+
+        eurostat_plots(
+            "Oil Products",
+            "export",
+            oilProducts_exports,
+            region,
+            oilProducts_exports_pie,
+            cols[4],
         )
 
 
