@@ -19,10 +19,11 @@ FZJcolor = get_fzjColor()
 lng_df = get_lng_storage()
 gng_df = get_ng_storage()
 
-legend_dict = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-font_dict = dict(size=24)
+legend_dict = dict(orientation="h", yanchor="top", y=-0.12, xanchor="center", x=0.5)
+# scale = 2
+font_dict = dict(size=28)
 
-write_image = False
+write_image = False  # True False
 scale = 2
 width = 3000 / scale
 height = 1000 / scale
@@ -88,6 +89,20 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
                 marker=marker_dict,
             )
         )
+    # if unit == "TWh":
+    fig.add_trace(
+        go.Line(
+            x=years,
+            y=df_all.sum(axis=0),
+            # stackgroup="one",
+            name="Total",
+            line_color=FZJcolor.get("black3"),
+            # secondary_y=True,
+        )
+    )
+    #     fig.update_yaxes(title_text="[TWh]", secondary_y=False)
+    #     fig.update_yaxes(title_text="[Mrd. m3]", secondary_y=True)
+
     fig.update_layout(
         title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} [{unit}]",
         font=dict(size=16),
@@ -171,11 +186,11 @@ pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
 #     step=10,
 # )
 
-reduced_demand = cols[1].selectbox("Nachfrageredutkion", ["False", "True"])
+reduced_demand = cols[1].selectbox("Nachfrageredutkion", ["False", "True"], 1)
 
-lng_capacity = cols[2].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 4.0, 5.6])
+lng_capacity = cols[2].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 4.0, 5.6], 1)
 
-soc_slack = cols[3].selectbox("SOC Slack", ["False", "True"])
+soc_slack = cols[3].selectbox("SOC Slack", ["False", "True"], 0)
 
 df = get_optiRes(pl_reduction, lng_capacity, reduced_demand, soc_slack)
 
@@ -204,6 +219,8 @@ fig.add_trace(
         x=xvals,
         y=df.ind_served,
         stackgroup="one",
+        # legendgroup="bedarf",
+        # legendgrouptitle_text="Erdgasbedarfe",
         name="Industrie",
         mode="none",
         fillcolor=FZJcolor.get("orange"),
@@ -216,6 +233,7 @@ fig.add_trace(
         x=xvals,
         y=df.elec_served,
         stackgroup="one",
+        # legendgroup="bedarf",
         name="Energie",
         mode="none",
         fillcolor=FZJcolor.get("blue")
@@ -228,6 +246,7 @@ fig.add_trace(
         x=xvals,
         y=df.dom_served,
         stackgroup="one",
+        # legendgroup="bedarf",
         name="Haushalte",
         mode="none",
         fillcolor=FZJcolor.get("green")
@@ -240,6 +259,7 @@ fig.add_trace(
         x=xvals,
         y=df.ghd_served,
         stackgroup="one",
+        # legendgroup="bedarf",
         name="GHD",
         mode="none",
         fillcolor=FZJcolor.get("lblue")
@@ -247,23 +267,30 @@ fig.add_trace(
     )
 )
 
-fig.add_trace(
-    go.Scatter(
-        x=xvals,
-        y=total_demand - total_demand_served,
-        stackgroup="one",
-        name="Ungedeckter Bedarf",
-        mode="none",
-        fillcolor=FZJcolor.get("red"),
-        # marker=marker_dict,
+unserved_demand = total_demand - total_demand_served
+# st.text(sum(unserved_demand))
+
+if sum(unserved_demand) > 0.001:
+    fig.add_trace(
+        go.Scatter(
+            x=xvals,
+            y=total_demand - total_demand_served,
+            stackgroup="one",
+            # legendgroup="bedarf",
+            name="Ungedeckter Bedarf",
+            mode="none",
+            fillcolor=FZJcolor.get("red"),
+            # marker=marker_dict,
+        )
     )
-)
 
 fig.add_trace(
     go.Scatter(
         x=xvals,
         y=df.pipeServed,
         stackgroup="two",
+        # legendgroup="import",
+        # legendgrouptitle_text="Erdgasimport",
         name="Pipeline Import",
         fillcolor="rgba(0, 0, 0, 0)",
         line_color=FZJcolor.get("blue3"),
@@ -275,6 +302,7 @@ fig.add_trace(
         x=xvals,
         y=df.lngServed,  # lng_val / 24,
         stackgroup="two",
+        # legendgroup="import",
         name="LNG Import",
         fillcolor="rgba(0, 0, 0, 0)",
         line_color=FZJcolor.get("yellow"),
@@ -398,18 +426,6 @@ storage_charge_lng = np.array([max(0, x) for x in storage_operation_lng])
 
 fig = go.Figure()
 
-# fig.add_trace(
-#     go.Line(
-#         x=xvals,
-#         y=df.lngServed + df.pipeServed - total_demand_served,
-#         # stackgroup="one",
-#         name="soc",
-#         # mode="none",
-#         # fillcolor=FZJcolor.get("orange")
-#         # marker=marker_dict,
-#     )
-# )
-
 fig.add_trace(
     go.Scatter(
         x=xvals,
@@ -456,22 +472,6 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 
-# Image Flow
-# cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
-# try:
-#     cols[0].image(get_optiImage("Flow", pl_reduction, lng_capacity))
-# except:
-#     cols[0].markdown("No image available")
-
-# Image SOC
-# cols[1].markdown("### Storage")
-# cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
-# try:
-#     cols[1].image(get_optiImage("Storage", pl_reduction, lng_capacity))
-# except:
-#     cols[0].markdown("No image available")
-
-
 st.text("")
 
 st.markdown("## Energy imports, production and export by country")
@@ -480,11 +480,12 @@ st.markdown(
 )
 
 
-cols = st.columns(2)
+cols = st.columns(3)
 region_list = get_eu27()
 region_list = ["EU27"] + region_list
 region = cols[0].selectbox("Region", region_list, 0)
-balance = cols[1].multiselect("Balance", ["Import", "Production", "Export"], ["Import"])
+balance = cols[1].multiselect("Bilanz", ["Import", "Production", "Export"], ["Import"])
+year = cols[2].selectbox("Jahr", [2017, 2018, 2019, 2020], 2)
 with st.spinner(text="Connecting to Eurostat database..."):
     # Import
     if "Import" in balance:

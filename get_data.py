@@ -64,7 +64,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     else:
         regions = [region]
 
-    fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"
+    fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"  # csv
     fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.csv"
 
     if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
@@ -126,7 +126,7 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
 
         other_nlargest = total_all - sum_nlargest
         if sum(other_nlargest) > 0:
-            df_nlargest.loc["Other", :] = total_all - sum_nlargest
+            df_nlargest.loc["Sonstige", :] = total_all - sum_nlargest
         df_nlargest = df_nlargest.sort_index(axis=1)
 
         # Change unit
@@ -146,6 +146,8 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         # Save results
         df_nlargest.to_csv(fileDir_all)
         df_single_year.to_csv(fileDir_single)
+        # df_nlargest.to_excel(fileDir_all)
+        # df_single_year.to_excel(fileDir_single)
 
     return df_nlargest, df_single_year
 
