@@ -67,17 +67,18 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
     fileDir_all = f"Input/Eurostat/{commodity}_{mode}_{region}.csv"
     fileDir_single = f"Input/Eurostat/{commodity}_{mode}_{region}_{year}.csv"
 
-    if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
-        df_nlargest = pd.read_csv(fileDir_all, index_col=0)
-        df_nlargest = df_nlargest.sort_index(axis=1)
-        df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
-    else:
+    # if os.path.isfile(fileDir_all) and os.path.isfile(fileDir_single):
+    #     df_nlargest = pd.read_csv(fileDir_all, index_col=0)
+    #     df_nlargest = df_nlargest.sort_index(axis=1)
+    #     df_single_year = pd.read_csv(fileDir_single, index_col=0).squeeze()
+    if True:  # else:
         mode_dict = {"import": "ti", "export": "te", "production": "cb"}
         mode_table = mode_dict.get(mode)
         table_dict = {
             "ng": f"nrg_{mode_table}_gas",
             "lng": f"nrg_{mode_table}_gas",
-            "oil": f"nrg_{mode_table}_oil",
+            "oilCrude": f"nrg_{mode_table}_oil",
+            "oilProducts": f"nrg_{mode_table}_oil",
             "sff": f"nrg_{mode_table}_sff",
         }
         table_name = table_dict.get(commodity)
@@ -90,8 +91,9 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         siec_dict = {
             "ng": "G3000",
             "lng": "G3200",
-            "oil": "O4100_TOT",
-            "sff": "C0000X0350-0370",
+            "oilCrude": "O4100_TOT",
+            "oilProducts": "O4600",
+            "sff": "C0100", # Steinkohle: "C0100" Ges: "C0000X0350-0370"
         }
         siec = siec_dict.get(commodity)
         df = df[df.siec.isin([siec])]
@@ -128,8 +130,15 @@ def get_eurostat_data(commodity, mode, region, nlargest, year=2020):
         df_nlargest = df_nlargest.sort_index(axis=1)
 
         # Change unit
-        if "gas" in table_name:
-            df_nlargest = df_nlargest / 3600  # TJ -> TWh
+        scale_dict = {
+            "ng": 3600,
+            "lng": 3600,
+            "oilCrude": 1000,
+            "oilProducts": 1000,
+            "sff": 1000,
+        }
+        scale_fac = scale_dict.get(commodity)
+        df_nlargest = df_nlargest / scale_fac  # TJ -> TWh
 
         # Single year value for pie chart
         df_single_year = df_nlargest.loc[:, year]

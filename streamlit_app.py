@@ -20,7 +20,7 @@ lng_df = get_lng_storage()
 gng_df = get_ng_storage()
 
 legend_dict = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-font_dict = dict(size=18)
+font_dict = dict(size=24)
 
 write_image = False
 scale = 2
@@ -34,6 +34,7 @@ pl_import = get_pipeline_data()
 # solid_fuel_share = get_solid_fuel_share()
 # crude_oil_share = get_crude_oil_share()
 
+year = 2019
 xval = lng_df["gasDayStartedOn"]
 
 ### Functions
@@ -53,13 +54,15 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
     unit_dict = {
         "Natural gas": "TWh",
         "LNG": "TWh",
-        "Solid fuels": "kt",
-        "Crude oil": "kt",
+        "Solid fuels": "Mio. t",
+        "Crude oil": "Mio. t",
+        "Oil products": "Mio. t",
     }
     translation_dict = {
         "Natural gas": "Erdgas",
-        "Solid fuels": "Feste Brennstoffe",
-        "Crude oil": "Mineralöl",
+        "Solid fuels": "Steinkohle",
+        "Crude oil": "Rohöl",
+        "Oil products": "Mineralölprodukte",
     }
     trans_mode_dict = {
         "import": "Import",  # "",  # "Import",
@@ -114,12 +117,14 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
             )
         )
         fig.update_layout(
-            title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} 2020 [%]",
+            title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} {year} ({int(sum(df_single.values))} {unit}) [%]",
             font=dict(size=16),
         )
         streamlit_obj.plotly_chart(fig, use_container_width=True)
         if write_image:
-            fig.write_image(f"Output/{region}_{commodity}_{mode}_2020.png", scale=scale)
+            fig.write_image(
+                f"Output/{region}_{commodity}_{mode}_{year}.png", scale=scale
+            )
         # streamlit_obj.caption("Source: Eurostat, 2022")
     except:
         streamlit_obj.markdown("No data  available")
@@ -369,7 +374,10 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title=f"Erdgasimporte", font=dict(size=16), yaxis_title="Erdgas [TWh/h]",
+    title=f"Erdgasimporte",
+    font=dict(size=16),
+    yaxis_title="Erdgas [TWh/h]",
+    legend=legend_dict,
 )
 st.plotly_chart(fig, use_container_width=True)
 
@@ -482,21 +490,49 @@ with st.spinner(text="Connecting to Eurostat database..."):
     if "Import" in balance:
         # with st.expander("Import", expanded=True):
         st.markdown("## Import")
-        ng_imports, ng_import_pie = get_eurostat_data("ng", "import", region, 7)
-        lng_imports, lng_import_pie = get_eurostat_data("lng", "import", region, 7)
-        oil_imports, oil_import_pie = get_eurostat_data("oil", "import", region, 12)
-        sff_imports, sff_import_pie = get_eurostat_data("sff", "import", region, 7)
+        ng_imports, ng_import_pie = get_eurostat_data(
+            "ng", "import", region, 7, year=year
+        )
+        lng_imports, lng_import_pie = get_eurostat_data(
+            "lng", "import", region, 7, year=year
+        )
+        oilCrude_imports, oilCrude_imports_pie = get_eurostat_data(
+            "oilCrude", "import", region, 12, year=year
+        )
+        oilProducts_imports, oilProducts_imports_pie = get_eurostat_data(
+            "oilProducts", "import", region, 12, year=year
+        )
+        sff_imports, sff_import_pie = get_eurostat_data(
+            "sff", "import", region, 7, year=year
+        )
 
-        cols = st.columns(4)
+        cols = st.columns(5)
         eurostat_plots(
             "Natural gas", "import", ng_imports, region, ng_import_pie, cols[0]
         )
+
         eurostat_plots("LNG", "import", lng_imports, region, lng_import_pie, cols[1])
+
         eurostat_plots(
             "Solid fuels", "import", sff_imports, region, sff_import_pie, cols[2]
         )
+
         eurostat_plots(
-            "Crude oil", "import", oil_imports, region, oil_import_pie, cols[3]
+            "Crude oil",
+            "import",
+            oilCrude_imports,
+            region,
+            oilCrude_imports_pie,
+            cols[3],
+        )
+
+        eurostat_plots(
+            "Oil products",
+            "import",
+            oilProducts_imports,
+            region,
+            oilProducts_imports_pie,
+            cols[4],
         )
         st.caption("Source: Eurostat, 2022")
 
@@ -505,19 +541,22 @@ with st.spinner(text="Connecting to Eurostat database..."):
         # with st.expander("Production", expanded=True):
         st.markdown("## Production")
         ng_production, ng_production_pie = get_eurostat_data(
-            "ng", "production", region, 7
+            "ng", "production", region, 7, year=year
         )
         lng_production, lng_production_pie = get_eurostat_data(
-            "lng", "production", region, 7
+            "lng", "production", region, 7, year=year
         )
-        oil_production, oil_production_pie = get_eurostat_data(
-            "oil", "production", region, 7
+        oilCrude_production, oilCrude_production_pie = get_eurostat_data(
+            "oilCrude", "production", region, 7, year=year
+        )
+        oilProducts_production, oilProducts_production_pie = get_eurostat_data(
+            "oilProducts", "production", region, 7, year=year
         )
         sff_production, sff_production_pie = get_eurostat_data(
-            "sff", "production", region, 7
+            "sff", "production", region, 7, year=year
         )
 
-        cols = st.columns(4)
+        cols = st.columns(5)
         eurostat_plots(
             "Natural gas",
             "production",
@@ -540,20 +579,36 @@ with st.spinner(text="Connecting to Eurostat database..."):
         eurostat_plots(
             "Crude oil",
             "production",
-            oil_production,
+            oilCrude_production,
             region,
-            oil_production_pie,
+            oilCrude_production_pie,
             cols[3],
         )
 
+        eurostat_plots(
+            "Oil Products",
+            "production",
+            oilProducts_production,
+            region,
+            oilProducts_production_pie,
+            cols[4],
+        )
     # Export
     if "Export" in balance:
         # with st.expander("Export", expanded=False):
         st.markdown("## Export")
-        ng_exports, ng_export_pie = get_eurostat_data("ng", "export", region, 7)
-        lng_exports, lng_export_pie = get_eurostat_data("lng", "export", region, 7)
-        oil_exports, oil_export_pie = get_eurostat_data("oil", "export", region, 7)
-        sff_exports, sff_export_pie = get_eurostat_data("sff", "export", region, 7)
+        ng_exports, ng_export_pie = get_eurostat_data(
+            "ng", "export", region, 7, year=year
+        )
+        lng_exports, lng_export_pie = get_eurostat_data(
+            "lng", "export", region, 7, year=year
+        )
+        oil_exports, oil_export_pie = get_eurostat_data(
+            "oil", "export", region, 7, year=year
+        )
+        sff_exports, sff_export_pie = get_eurostat_data(
+            "sff", "export", region, 7, year=year
+        )
 
         cols = st.columns(4)
         eurostat_plots(
