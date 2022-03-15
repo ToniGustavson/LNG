@@ -19,6 +19,13 @@ FZJcolor = get_fzjColor()
 lng_df = get_lng_storage()
 gng_df = get_ng_storage()
 
+legend_dict = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
+font_dict = dict(size=18)
+
+write_image = False
+scale = 2
+width = 3000 / scale
+height = 1000 / scale
 
 # Pipelines
 pl_import = get_pipeline_data()
@@ -84,8 +91,9 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
     )
 
     streamlit_obj.plotly_chart(fig, use_container_width=True)
-    scale = 3
-    # fig.write_image(f"Output/{region}_{commodity}_{mode}_{unit}.png", scale=scale)
+    # scale = 3
+    if write_image:
+        fig.write_image(f"Output/{region}_{commodity}_{mode}_{unit}.png", scale=scale)
     # streamlit_obj.caption("Source: Eurostat, 2022")
 
     # Pie Chart
@@ -109,15 +117,13 @@ def eurostat_plots(commodity, mode, df_all, region, df_single, streamlit_obj):
             title=f"{translation_dict.get(commodity, commodity)} {trans_mode_dict.get(mode, mode)} 2020 [%]",
             font=dict(size=16),
         )
-        streamlit_obj.plotly_chart(fig, use_container_width=True)  #
-        # fig.write_image(f"Output/{region}_{commodity}_{mode}_2020.png", scale=scale)
+        streamlit_obj.plotly_chart(fig, use_container_width=True)
+        if write_image:
+            fig.write_image(f"Output/{region}_{commodity}_{mode}_2020.png", scale=scale)
         # streamlit_obj.caption("Source: Eurostat, 2022")
     except:
         streamlit_obj.markdown("No data  available")
 
-
-legend_dict = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-font_dict = dict(size=18)
 
 font_size = 18
 
@@ -146,7 +152,7 @@ st.markdown(
     "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
 )
 
-cols = st.columns(3)
+cols = st.columns(4)
 
 # cols[0].markdown("Reduktion Russischer Gas-Importe: 100 %")
 pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
@@ -162,10 +168,11 @@ pl_reduction = cols[0].selectbox("Reduktion Russischer Gas-Importe [%]", [100])
 
 reduced_demand = cols[1].selectbox("Nachfrageredutkion", ["False", "True"])
 
-lng_capacity = cols[2].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 5.6])
+lng_capacity = cols[2].selectbox("LNG Import Kapazität [TWh/Tag]", [2.4, 4.0, 5.6])
 
+soc_slack = cols[3].selectbox("SOC Slack", ["False", "True"])
 
-df = get_optiRes(pl_reduction, lng_capacity, reduced_demand)
+df = get_optiRes(pl_reduction, lng_capacity, reduced_demand, soc_slack)
 
 cols = st.columns(2)
 # cols[0].markdown("### Supply and demand")
@@ -247,24 +254,14 @@ fig.add_trace(
     )
 )
 
-fig.update_layout(
-    title=f"Gedeckte Erdgasbedarfe [TWh/h]", font=dict(size=16),
-)
-cols[0].plotly_chart(fig, use_container_width=True)
-
-#%%
-# Pipeline Import
-fig = go.Figure()
-
 fig.add_trace(
     go.Scatter(
         x=xvals,
         y=df.pipeServed,
-        stackgroup="one",
+        stackgroup="two",
         name="Pipeline Import",
-        mode="none",
-        fillcolor=FZJcolor.get("yellow")
-        # marker=marker_dict,
+        fillcolor="rgba(0, 0, 0, 0)",
+        line_color=FZJcolor.get("blue3"),
     )
 )
 
@@ -272,18 +269,30 @@ fig.add_trace(
     go.Scatter(
         x=xvals,
         y=df.lngServed,  # lng_val / 24,
-        stackgroup="one",
+        stackgroup="two",
         name="LNG Import",
-        mode="none",
-        fillcolor=FZJcolor.get("blue3")
-        # marker=marker_dict,
+        fillcolor="rgba(0, 0, 0, 0)",
+        line_color=FZJcolor.get("yellow"),
     )
 )
 
+
 fig.update_layout(
-    title=f"Erdgasimporte [TWh/h]", font=dict(size=16),
+    title=f"Gedeckte Erdgasbedarfe",  # [TWh/h]
+    font=font_dict,
+    yaxis_title="Erdgas [TWh/h]",
+    legend=legend_dict,
 )
-cols[0].plotly_chart(fig, use_container_width=True)
+
+if write_image:
+    fig.write_image(
+        f"Output/Optimierung_Erdgasbedarf_{pl_reduction}_{lng_capacity}_{reduced_demand}_{soc_slack}.png",
+        width=width,
+        height=height,
+        # scale=scale,
+    )
+st.plotly_chart(fig, use_container_width=True)
+
 
 #%%
 # SOC
@@ -314,10 +323,55 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title=f"Speicherfüllstand [TWh]", font=dict(size=16),
+    title=f"Speicherfüllstand",
+    font=font_dict,
+    yaxis_title="Erdgas [TWh]",
+    legend=legend_dict,
 )
 
-cols[1].plotly_chart(fig, use_container_width=True)
+if write_image:
+    fig.write_image(
+        f"Output/Optimierung_Speicher_{pl_reduction}_{lng_capacity}_{reduced_demand}_{soc_slack}.png",
+        width=width,
+        height=height,
+        # scale=scale,
+    )
+
+st.plotly_chart(fig, use_container_width=True)
+
+
+#%%
+# Pipeline Import
+fig = go.Figure()
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.pipeServed,
+        stackgroup="one",
+        name="Pipeline Import",
+        mode="none",
+        fillcolor=FZJcolor.get("blue3")
+        # marker=marker_dict,
+    )
+)
+
+fig.add_trace(
+    go.Scatter(
+        x=xvals,
+        y=df.lngServed,  # lng_val / 24,
+        stackgroup="one",
+        name="LNG Import",
+        mode="none",
+        fillcolor=FZJcolor.get("yellow")
+        # marker=marker_dict,
+    )
+)
+
+fig.update_layout(
+    title=f"Erdgasimporte", font=dict(size=16), yaxis_title="Erdgas [TWh/h]",
+)
+st.plotly_chart(fig, use_container_width=True)
 
 
 #%%
@@ -385,10 +439,13 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    title=f"Ein- und Ausspeicherung Gasspeicher [TWh/h]", font=dict(size=16),
+    title=f"Ein- und Ausspeicherung Gasspeicher",
+    font=dict(size=16),
+    yaxis_title="Erdgas [TWh/h]",
+    legend=legend_dict,
 )
 
-cols[1].plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 
 # Image Flow
